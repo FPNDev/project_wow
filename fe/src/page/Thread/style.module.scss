@@ -1,0 +1,92 @@
+.thread {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 2rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.option {
+  max-width: unset;
+
+  &.correct {
+    color: white;
+    background: green;
+  }
+
+  &.wrong {
+    background: rgba(red, 0.1);
+  }
+
+  &.active {
+    font-weight: bold;
+  }
+}
+
+.footer {
+  display: flex;
+  gap: 1rem;
+  margin: auto 0 0;
+  flex-wrap: wrap;
+  position: relative;
+
+  .quote {
+    flex: 0 0 calc(100% - 2rem);
+    margin: 1rem;
+    padding: 2rem 1rem 2rem 3rem;
+    border-radius: 1rem;
+    background: #eef;
+    font-size: 1.3rem;
+    line-height: 1.8;
+  }
+
+  .next-btn,
+  .back-btn {
+    width: 100%;
+  }
+
+  .back-btn {
+    margin: 0 auto 0 0;
+  }
+  .next-btn {
+    margin: 0 0 0 auto;
+  }
+}
+
+.topic-section {
+  display: flex;
+  width: 24rem;
+
+  @media (min-width: 900px) {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  @media (max-width: 899px) {
+    flex: 0 0 100%;
+  }
+
+  button {
+    position: absolute;
+    height: 3.5rem;
+    width: 3.5rem;
+    border-radius: 1rem;
+    right: 0;
+  }
+
+  :global(.textfield) {
+    min-height: 3.5rem;
+    max-height: 3.5rem;
+    width: 100%;
+
+    [contenteditable] {
+      max-width: calc(100% - 3.5rem);
+    }
+  }
+}
