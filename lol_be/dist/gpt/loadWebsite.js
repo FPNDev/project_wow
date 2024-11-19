@@ -31,6 +31,7 @@ const loadWebsite = (websiteLink) => __awaiter(void 0, void 0, void 0, function*
     const text = yield (0, axios_1.default)(websiteLink, { responseType: 'text' })
         .then((r) => r.data)
         .catch(() => '');
+    console.log(text);
     const { window } = new jsdom_1.JSDOM(text);
     const articles = [...window.document.querySelectorAll('article')];
     if (articles.length) {
@@ -40,6 +41,6 @@ const loadWebsite = (websiteLink) => __awaiter(void 0, void 0, void 0, function*
             .join('\n'));
     }
     const main = window.document.querySelector('main,#main,#content,#main-content');
-    return trimResponse((_b = (_a = main === null || main === void 0 ? void 0 : main.textContent) !== null && _a !== void 0 ? _a : window.document.body.innerText) !== null && _b !== void 0 ? _b : '');
+    return trimResponse((_b = (_a = main === null || main === void 0 ? void 0 : main.textContent) !== null && _a !== void 0 ? _a : window.document.body.innerText) !== null && _b !== void 0 ? _b : 'nothing');
 });
 exports.loadWebsite = loadWebsite;

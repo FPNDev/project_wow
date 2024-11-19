@@ -16,9 +16,17 @@ const findParent = (node: Node, nodeName: string) => {
 };
 
 const loadWebsite = async (websiteLink: string) => {
-  const text = await axios<string>(websiteLink, { responseType: 'text' })
+  const text = await axios<string>(websiteLink, {
+    responseType: 'text',
+    headers: {
+      'User-Agent':
+        'Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/131.0.6778.70 Safari/537.36',
+    },
+  })
     .then((r) => r.data)
     .catch(() => '');
+
+  console.log(text);
 
   const { window } = new JSDOM(text);
 
@@ -35,7 +43,9 @@ const loadWebsite = async (websiteLink: string) => {
   const main = window.document.querySelector(
     'main,#main,#content,#main-content'
   );
-  return trimResponse(main?.textContent ?? window.document.body.innerText ?? '');
+  return trimResponse(
+    main?.textContent ?? window.document.body.innerText ?? 'nothing'
+  );
 };
 
 export { loadWebsite };
