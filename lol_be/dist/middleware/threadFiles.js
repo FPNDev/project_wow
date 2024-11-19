@@ -14,7 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteThreadFiles = exports.uploadThreadFiles = void 0;
 const promises_1 = __importDefault(require("fs/promises"));
-const multer_1 = require("./multer");
+const multer_1 = require("../config/multer");
 const uploadThreadFiles = (req, res, next) => {
     return multer_1.upload.array('files[]')(req, res, (uploadError) => {
         if (uploadError) {

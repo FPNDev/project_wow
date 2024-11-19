@@ -48,7 +48,7 @@ const createThread = (text, files) => __awaiter(void 0, void 0, void 0, function
     if (answer === null || answer === void 0 ? void 0 : answer.startsWith(ERROR_TOKEN)) {
         throw new Error(answer.slice(ERROR_TOKEN.length).trim());
     }
-    throw new Error('Невідома помилка ' + answer);
+    throw new Error('Unknown error ' + answer);
 });
 exports.createThread = createThread;
 const setThreadTopic = (threadId_1, ...args_1) => __awaiter(void 0, [threadId_1, ...args_1], void 0, function* (threadId, topic = 'No topic') {
@@ -61,7 +61,7 @@ const setThreadTopic = (threadId_1, ...args_1) => __awaiter(void 0, [threadId_1,
     if (answer === null || answer === void 0 ? void 0 : answer.startsWith(ERROR_TOKEN)) {
         throw new Error(answer.slice(ERROR_TOKEN.length).trim());
     }
-    throw new Error('Невідома помилка ' + answer);
+    throw new Error('Unknown error ' + answer);
 });
 exports.setThreadTopic = setThreadTopic;
 const markThreadActive = (threadId) => {

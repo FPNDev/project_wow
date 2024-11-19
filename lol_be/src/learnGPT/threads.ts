@@ -47,7 +47,7 @@ const createThread = async (text: string, files: Express.Multer.File[]) => {
     throw new Error(answer.slice(ERROR_TOKEN.length).trim());
   }
 
-  throw new Error('Невідома помилка ' + answer);
+  throw new Error('Unknown error ' + answer);
 };
 
 const setThreadTopic = async (threadId: string, topic = 'No topic') => {
@@ -62,7 +62,7 @@ const setThreadTopic = async (threadId: string, topic = 'No topic') => {
     throw new Error(answer.slice(ERROR_TOKEN.length).trim());
   }
 
-  throw new Error('Невідома помилка ' + answer);
+  throw new Error('Unknown error ' + answer);
 };
 
 const markThreadActive = (threadId: string) => {
