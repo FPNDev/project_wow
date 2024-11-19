@@ -231,7 +231,7 @@ export class Thread extends Component {
   private renderBackButton() {
     if (!this.prevBtn) {
       this.prevBtn = html`<button class="button ${classes.backBtn}">
-        Назад
+        Prev
       </button>` as HTMLButtonElement;
       this.setBackButtonVisibility();
       this.prevBtn.onclick = () => this.goPrev();
@@ -251,7 +251,7 @@ export class Thread extends Component {
   private renderNextButton() {
     if (!this.nextBtn) {
       this.nextBtn = html`<button class="button no-display ${classes.nextBtn}">
-        Далі
+        Next
       </button>` as HTMLButtonElement;
 
       this.nextBtn.onclick = () => this.goNext();
@@ -259,7 +259,7 @@ export class Thread extends Component {
   }
 
   private renderTopicInput() {
-    const inputElement = new TextArea('', 'Тема питань (в довільному форматі)');
+    const inputElement = new TextArea('', 'Questions topic (any format)');
     const submitBtn = html`<button class="button">
       OK
     </button>` as HTMLButtonElement;
@@ -274,7 +274,7 @@ export class Thread extends Component {
         const topicStartsAt = await setTopic(this.threadId, newTopic);
 
         alert(
-          `Тему було змінено на ${newTopic}.\nНова тема розпочнеться після питання номер ${topicStartsAt}`,
+          `Topic was changed to ${newTopic}.\nNew topic will start after question #${topicStartsAt}`,
         );
       } catch (e) {
       } finally {

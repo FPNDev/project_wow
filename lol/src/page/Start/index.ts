@@ -34,7 +34,7 @@ export class Start extends Component {
     ` as HTMLDivElement;
 
     const continueButton = html`<button class="button ${classes.continueBtn}">
-      Продовжити
+      Continue
     </button>` as HTMLButtonElement;
 
     const footer = html`
@@ -47,7 +47,7 @@ export class Start extends Component {
         const textTrimmed = materialField.value.trim();
         const topicTrimmed = topicField.value.trim();
         if (!textTrimmed && !fileField.files?.length) {
-          alert('Задайте матеріали або оберіть файл(-и), щоб розпочати роботу');
+          alert('Please, provide materials to start');
           return;
         }
 
@@ -56,18 +56,18 @@ export class Start extends Component {
         const loadingSteps = [];
 
         loadingSteps.push({
-          text: 'Обробляю матеріали',
+          text: 'Processing materials...',
           fn: () => createThread(textTrimmed, fileField.files),
         });
         if (topicTrimmed) {
           loadingSteps.push({
-            text: 'Встановлюю тему',
+            text: 'Setting up a topic...',
             fn: (threadId: string) =>
               setTopic(threadId, topicTrimmed).then(() => threadId),
           });
         }
         loadingSteps.push({
-          text: 'Створюю питання',
+          text: 'Creating questions...',
           fn: (threadId: string) => getQuestionFromThread(threadId, 0),
         });
 
@@ -97,13 +97,12 @@ export class Start extends Component {
 
     return html`
       <div class="${classes.startPage}">
-        <h1>Задайте матеріали для опрацювання</h1>
+        <h1>Please, provide materials to work with</h1>
         <h4 class="${classes.headingHint}">
-          формат довільний, підтримуються - тексти, посилання. Можна задавати
-          декілька матеріалів одразу
+          supports - text, links. You can set up multiple resources at once
         </h4>
         ${materialField.node}
-        <h3>Задайте тему питань (необов'язково)</h3>
+        <h3>Set the topic for questions (optional)</h3>
         ${topicField.node} ${fileFieldWrapper} ${footer}
       </div>
     `;

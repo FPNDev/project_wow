@@ -76,7 +76,6 @@ const startQuestionRequest = (threadId) => {
         (0, threads_1.markThreadActive)(threadId);
         textValue += delta;
         if (!errorFound && textValue.startsWith(ERROR_TOKEN)) {
-            console.log('ERROR FOUND!!!');
             textValue = textValue.slice(ERROR_TOKEN.length).trim();
             errorFound = true;
         }
