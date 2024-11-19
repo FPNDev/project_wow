@@ -35,7 +35,7 @@ const loadWebsite = async (websiteLink: string) => {
   const main = window.document.querySelector(
     'main,#main,#content,#main-content'
   );
-  return trimResponse(main?.textContent ?? window.document.body.innerText);
+  return trimResponse(main?.textContent ?? window.document.body.innerText ?? '');
 };
 
 export { loadWebsite };

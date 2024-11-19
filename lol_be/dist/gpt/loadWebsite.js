@@ -27,7 +27,7 @@ const findParent = (node, nodeName) => {
     return false;
 };
 const loadWebsite = (websiteLink) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
+    var _a, _b;
     const text = yield (0, axios_1.default)(websiteLink, { responseType: 'text' })
         .then((r) => r.data)
         .catch(() => '');
@@ -40,6 +40,6 @@ const loadWebsite = (websiteLink) => __awaiter(void 0, void 0, void 0, function*
             .join('\n'));
     }
     const main = window.document.querySelector('main,#main,#content,#main-content');
-    return trimResponse((_a = main === null || main === void 0 ? void 0 : main.textContent) !== null && _a !== void 0 ? _a : window.document.body.innerText);
+    return trimResponse((_b = (_a = main === null || main === void 0 ? void 0 : main.textContent) !== null && _a !== void 0 ? _a : window.document.body.innerText) !== null && _b !== void 0 ? _b : '');
 });
 exports.loadWebsite = loadWebsite;
