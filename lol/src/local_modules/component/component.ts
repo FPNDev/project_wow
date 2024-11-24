@@ -1,7 +1,3 @@
-interface Component {
-  onDisconnect?(): void;
-}
-
 abstract class Component<T extends Node = Node> {
   _children = new Set<Component<Node>>();
 
@@ -33,6 +29,8 @@ abstract class Component<T extends Node = Node> {
       child.destroy();
     }
   }
+
+  onDisconnect?(): void;
 }
 
 export { Component };
