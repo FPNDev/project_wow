@@ -58,9 +58,9 @@ const setTopic = (threadId: string, topic: string) => {
 };
 
 const getQuestionFromThread = (threadId: string, questionId?: number) => {
-  return fetch(`${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`).then((r) => {
+  return fetch(`${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`).then(async (r) => {
     if (!r.ok) {
-      return Promise.reject(r);
+      throw new Error(await r.text());
     }
 
     return r.json() as Promise<QuestionData>;

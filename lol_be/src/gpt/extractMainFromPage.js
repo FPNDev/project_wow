@@ -16,7 +16,7 @@ export default () => {
       }
       return false;
     };
-    
+
     return articles
       .filter((a) => !findParent(a, 'ARTICLE'))
       .map((v) => v.innerText)

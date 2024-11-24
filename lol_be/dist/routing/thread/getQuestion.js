@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = require("../../config/express");
+const express_1 = require("../../express");
 const learnGPT_1 = require("../../learnGPT");
 const getQuestionAction = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const threadId = req.params.threadId;

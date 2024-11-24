@@ -12,7 +12,7 @@ const loadWebsite = async (websiteLink: string) => {
   try {
     await page.goto(websiteLink, { waitUntil: 'networkidle0' });
     text = await page.evaluate(
-      await import('./findContentOnPage.js').then((m) => m.default)
+      await import('./extractMainFromPage.js').then((m) => m.default)
     );
   } catch (_) {
     console.log(_, typeof _ === 'object' && _ && 'message' in _ && _.message);

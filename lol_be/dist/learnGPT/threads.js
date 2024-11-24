@@ -13,8 +13,6 @@ exports.markThreadInactive = exports.markThreadActive = exports.doesThreadExist 
 const gpt_1 = require("../gpt");
 const openai_1 = require("../openai");
 const response_1 = require("./response");
-const SUCCESS_TOKEN = '[success]';
-const ERROR_TOKEN = '[error]';
 const ActiveThreads = new Set();
 const doesThreadExist = (threadId) => __awaiter(void 0, void 0, void 0, function* () {
     if (ActiveThreads.has(threadId)) {

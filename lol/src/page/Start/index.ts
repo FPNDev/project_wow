@@ -47,7 +47,7 @@ export class Start extends Component {
         const textTrimmed = materialField.value.trim();
         const topicTrimmed = topicField.value.trim();
         if (!textTrimmed && !fileField.files?.length) {
-          alert('Please, provide materials to start');
+          alert('Задайте будь ласка матеріали для обробки');
           return;
         }
 
@@ -56,18 +56,18 @@ export class Start extends Component {
         const loadingSteps = [];
 
         loadingSteps.push({
-          text: 'Processing materials...',
+          text: 'Оборобляємо матеріали...',
           fn: () => createThread(textTrimmed, fileField.files),
         });
         if (topicTrimmed) {
           loadingSteps.push({
-            text: 'Setting up a topic...',
+            text: 'Встановлюємо тему...',
             fn: (threadId: string) =>
               setTopic(threadId, topicTrimmed).then(() => threadId),
           });
         }
         loadingSteps.push({
-          text: 'Creating questions...',
+          text: 'Створюємо питання...',
           fn: (threadId: string) => getQuestionFromThread(threadId, 0),
         });
 

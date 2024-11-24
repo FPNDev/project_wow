@@ -75,6 +75,7 @@ const startQuestionRequest = (threadId: string) => {
 
   let successFound = false;
   let errorFound = false;
+  let questionsFound = false;
   let currentQuestion: Question | undefined;
 
   const questionsRequest = sendMessageReceiveDelta(threadId, '[get_question]');
@@ -128,6 +129,7 @@ const startQuestionRequest = (threadId: string) => {
             currentQuestion.quote = textSection;
             questions[threadId].push(currentQuestion);
             onQuestion$.notify();
+            questionsFound = true;
             currentQuestion = undefined;
           }
         }
@@ -144,9 +146,11 @@ const startQuestionRequest = (threadId: string) => {
     } else {
       loadingQuestions[threadId] = false;
     }
-
+    
     if (errorFound) {
       onError$.notify(removeResponseEnd(textValue.trim()));
+    } else if (!questionsFound) {
+      onError$.notify('Неможливо згенерувати питання за даними матеріалами');
     }
   });
 };

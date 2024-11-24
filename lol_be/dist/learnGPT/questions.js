@@ -69,6 +69,7 @@ const startQuestionRequest = (threadId) => {
     let textValue = '';
     let successFound = false;
     let errorFound = false;
+    let questionsFound = false;
     let currentQuestion;
     const questionsRequest = (0, gpt_1.sendMessageReceiveDelta)(threadId, '[get_question]');
     questionsRequest.subscribe((delta) => __awaiter(void 0, void 0, void 0, function* () {
@@ -124,6 +125,7 @@ const startQuestionRequest = (threadId) => {
                         currentQuestion.quote = textSection;
                         questions[threadId].push(currentQuestion);
                         onQuestion$.notify();
+                        questionsFound = true;
                         currentQuestion = undefined;
                     }
                 }
@@ -140,6 +142,9 @@ const startQuestionRequest = (threadId) => {
         }
         if (errorFound) {
             onError$.notify((0, response_1.removeResponseEnd)(textValue.trim()));
+        }
+        else if (!questionsFound) {
+            onError$.notify('Неможливо згенерувати питання за даними матеріалами');
         }
     });
 };

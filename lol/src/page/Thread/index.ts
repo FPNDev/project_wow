@@ -205,8 +205,8 @@ export class Thread extends Component {
           this.loadingQuestion = false;
 
           alert(
-            typeof e === 'string'
-              ? e
+            e instanceof Error
+              ? e.message
               : 'Помилка завантаження питання. debug: ' + JSON.stringify(e),
           );
 

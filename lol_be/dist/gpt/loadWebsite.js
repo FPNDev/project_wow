@@ -40,7 +40,7 @@ const loadWebsite = (websiteLink) => __awaiter(void 0, void 0, void 0, function*
     let text;
     try {
         yield page.goto(websiteLink, { waitUntil: 'networkidle0' });
-        text = yield page.evaluate(yield Promise.resolve().then(() => __importStar(require('./findContentOnPage.js'))).then((m) => m.default));
+        text = yield page.evaluate(yield Promise.resolve().then(() => __importStar(require('./extractMainFromPage.js'))).then((m) => m.default));
     }
     catch (_) {
         console.log(_, typeof _ === 'object' && _ && 'message' in _ && _.message);

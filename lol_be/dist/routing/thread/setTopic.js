@@ -13,7 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const body_parser_1 = __importDefault(require("body-parser"));
-const express_1 = require("../../config/express");
+const express_1 = require("../../express");
 const learnGPT_1 = require("../../learnGPT");
 express_1.app.post('/:threadId/topic', body_parser_1.default.json(), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     var _a, _b;
