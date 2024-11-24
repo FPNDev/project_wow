@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.markThreadInactive = exports.markThreadActive = exports.doesThreadExist = exports.setThreadTopic = exports.createThread = void 0;
 const gpt_1 = require("../gpt");
 const openai_1 = require("../openai");
+const response_1 = require("./response");
 const SUCCESS_TOKEN = '[success]';
 const ERROR_TOKEN = '[error]';
 const ActiveThreads = new Set();
@@ -40,28 +41,22 @@ const createThread = (text, files) => __awaiter(void 0, void 0, void 0, function
         finalText += '\n' + fileSummary;
     }
     const answer = (_a = (yield (0, gpt_1.sendMessage)(thread.id, `[setup_text]\n${finalText}`))) === null || _a === void 0 ? void 0 : _a.trim();
-    if (answer === null || answer === void 0 ? void 0 : answer.startsWith(SUCCESS_TOKEN)) {
+    try {
+        (0, response_1.extractSuccessMessage)(answer);
         return thread.id;
     }
-    markThreadInactive(thread.id);
-    yield openai_1.openai.beta.threads.del(thread.id);
-    if (answer === null || answer === void 0 ? void 0 : answer.startsWith(ERROR_TOKEN)) {
-        throw new Error(answer.slice(ERROR_TOKEN.length).trim());
+    catch (err) {
+        markThreadInactive(thread.id);
+        yield openai_1.openai.beta.threads.del(thread.id);
+        throw err;
     }
-    throw new Error('Unknown error ' + answer);
 });
 exports.createThread = createThread;
 const setThreadTopic = (threadId_1, ...args_1) => __awaiter(void 0, [threadId_1, ...args_1], void 0, function* (threadId, topic = 'No topic') {
     var _a;
     (0, gpt_1.abortRunOnThread)(threadId);
     const answer = (_a = (yield (0, gpt_1.sendMessage)(threadId, `[set_topic]\n${topic}`))) === null || _a === void 0 ? void 0 : _a.trim();
-    if (answer === null || answer === void 0 ? void 0 : answer.startsWith(SUCCESS_TOKEN)) {
-        return answer;
-    }
-    if (answer === null || answer === void 0 ? void 0 : answer.startsWith(ERROR_TOKEN)) {
-        throw new Error(answer.slice(ERROR_TOKEN.length).trim());
-    }
-    throw new Error('Unknown error ' + answer);
+    return (0, response_1.extractSuccessMessage)(answer);
 });
 exports.setThreadTopic = setThreadTopic;
 const markThreadActive = (threadId) => {

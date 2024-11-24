@@ -274,7 +274,7 @@ export class Thread extends Component {
         const topicStartsAt = await setTopic(this.threadId, newTopic);
 
         alert(
-          `Topic was changed to ${newTopic}.\nNew topic will start after question #${topicStartsAt}`,
+          `Тему змінено на "${newTopic}".\nТему змінено після питання #${topicStartsAt}`,
         );
       } catch (e) {
       } finally {

@@ -43,7 +43,6 @@ const getQuestion = (threadId, index) => __awaiter(void 0, void 0, void 0, funct
     else {
         return new Promise((resolve, reject) => {
             const unsubscribeError = onError$.subscribe((errMessage) => {
-                console.log('onerror', errMessage);
                 unsubscribeError();
                 unsubscribeQuestion();
                 reject(new Error(errMessage));

@@ -2,9 +2,6 @@ import { abortRunOnThread, sendMessage } from '../gpt';
 import { openai } from '../openai';
 import { extractSuccessMessage } from './response';
 
-const SUCCESS_TOKEN = '[success]' as const;
-const ERROR_TOKEN = '[error]' as const;
-
 const ActiveThreads = new Set<string>();
 
 const doesThreadExist = async (threadId: string) => {
@@ -35,34 +32,21 @@ const createThread = async (text: string, files: Express.Multer.File[]) => {
   const answer = (
     await sendMessage(thread.id, `[setup_text]\n${finalText}`)
   )?.trim();
-
-  if (answer?.startsWith(SUCCESS_TOKEN)) {
+  try {
+    extractSuccessMessage(answer);
     return thread.id;
+  } catch (err: unknown) {
+    markThreadInactive(thread.id);
+    await openai.beta.threads.del(thread.id);
+
+    throw err;
   }
-
-  markThreadInactive(thread.id);
-  await openai.beta.threads.del(thread.id);
-
-  if (answer?.startsWith(ERROR_TOKEN)) {
-    throw new Error(answer.slice(ERROR_TOKEN.length).trim());
-  }
-
-  throw new Error('Unknown error ' + answer);
 };
 
 const setThreadTopic = async (threadId: string, topic = 'No topic') => {
   abortRunOnThread(threadId);
   const answer = (await sendMessage(threadId, `[set_topic]\n${topic}`))?.trim();
-
-  if (answer?.startsWith(SUCCESS_TOKEN)) {
-    return answer;
-  }
-
-  if (answer?.startsWith(ERROR_TOKEN)) {
-    throw new Error(answer.slice(ERROR_TOKEN.length).trim());
-  }
-
-  throw new Error('Unknown error ' + answer);
+  return extractSuccessMessage(answer);
 };
 
 const markThreadActive = (threadId: string) => {

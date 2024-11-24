@@ -34,7 +34,7 @@ export class Start extends Component {
     ` as HTMLDivElement;
 
     const continueButton = html`<button class="button ${classes.continueBtn}">
-      Continue
+      Продовжити
     </button>` as HTMLButtonElement;
 
     const footer = html`
@@ -97,12 +97,12 @@ export class Start extends Component {
 
     return html`
       <div class="${classes.startPage}">
-        <h1>Please, provide materials to work with</h1>
+        <h1>Задайте матеріали для роботи</h1>
         <h4 class="${classes.headingHint}">
-          supports - text, links. You can set up multiple resources at once
+          підтримуються - текст, посилання. Можна задати декілька матеріалів одразу
         </h4>
         ${materialField.node}
-        <h3>Set the topic for questions (optional)</h3>
+        <h3>Задайте тему запитань (необов'язково)</h3>
         ${topicField.node} ${fileFieldWrapper} ${footer}
       </div>
     `;

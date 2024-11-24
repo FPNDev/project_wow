@@ -1,4 +1,27 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -8,39 +31,21 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.loadWebsite = void 0;
-const axios_1 = __importDefault(require("axios"));
-const jsdom_1 = require("jsdom");
+const puppeteer_1 = require("../config/puppeteer");
 const trimResponse = (text) => text.replace(/\s{2,}/g, ' ').slice(0, 35000);
-const findParent = (node, nodeName) => {
-    let parent = node.parentNode;
-    while (parent) {
-        if (parent.nodeName === nodeName) {
-            return true;
-        }
-        parent = parent.parentNode;
-    }
-    return false;
-};
 const loadWebsite = (websiteLink) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a, _b;
-    const text = yield (0, axios_1.default)(websiteLink, { responseType: 'text' })
-        .then((r) => r.data)
-        .catch(() => '');
-    console.log(text);
-    const { window } = new jsdom_1.JSDOM(text);
-    const articles = [...window.document.querySelectorAll('article')];
-    if (articles.length) {
-        return trimResponse(articles
-            .filter((a) => !findParent(a, 'ARTICLE'))
-            .map((v) => v.innerText)
-            .join('\n'));
+    const page = yield (0, puppeteer_1.createPage)();
+    let text;
+    try {
+        yield page.goto(websiteLink, { waitUntil: 'networkidle0' });
+        text = yield page.evaluate(yield Promise.resolve().then(() => __importStar(require('./findContentOnPage.js'))).then((m) => m.default));
     }
-    const main = window.document.querySelector('main,#main,#content,#main-content');
-    return trimResponse((_b = (_a = main === null || main === void 0 ? void 0 : main.textContent) !== null && _a !== void 0 ? _a : window.document.body.innerText) !== null && _b !== void 0 ? _b : 'nothing');
+    catch (_) {
+        console.log(_, typeof _ === 'object' && _ && 'message' in _ && _.message);
+        return '';
+    }
+    return trimResponse(text);
 });
 exports.loadWebsite = loadWebsite;
