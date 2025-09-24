@@ -68,7 +68,7 @@ const getQuestion = async (
   }
 };
 
-const startQuestionRequest = (threadId: string) => {
+const startQuestionRequest = async (threadId: string) => {
   loadingQuestions[threadId] = true;
 
   let textValue = '';
@@ -78,8 +78,10 @@ const startQuestionRequest = (threadId: string) => {
   let questionsFound = false;
   let currentQuestion: Question | undefined;
 
-  const questionsRequest = sendMessageReceiveDelta(threadId, '[get_question]');
-  questionsRequest.subscribe(async (delta: string) => {
+  for await (const delta of sendMessageReceiveDelta(
+    threadId,
+    '[get_question]'
+  )) {
     markThreadActive(threadId);
     textValue += delta;
     if (!errorFound && textValue.startsWith(ERROR_TOKEN)) {
@@ -135,24 +137,22 @@ const startQuestionRequest = (threadId: string) => {
         }
       }
     }
-  });
+  }
 
-  questionsRequest.subscribeDone(() => {
-    if (
-      !errorFound &&
-      maxQueuedIndex[threadId] + PRELOAD_BEFORE > questions[threadId].length
-    ) {
-      startQuestionRequest(threadId);
-    } else {
-      loadingQuestions[threadId] = false;
-    }
-    
-    if (errorFound) {
-      onError$.notify(removeResponseEnd(textValue.trim()));
-    } else if (!questionsFound) {
-      onError$.notify('Неможливо згенерувати питання за даними матеріалами');
-    }
-  });
+  if (
+    !errorFound &&
+    maxQueuedIndex[threadId] + PRELOAD_BEFORE > questions[threadId].length
+  ) {
+    startQuestionRequest(threadId);
+  } else {
+    loadingQuestions[threadId] = false;
+  }
+
+  if (errorFound) {
+    onError$.notify(removeResponseEnd(textValue.trim()));
+  } else if (!questionsFound) {
+    onError$.notify('Неможливо згенерувати питання за даними матеріалами');
+  }
 };
 
 export { loadingQuestions, questions as LoadedQuestionsByThread };

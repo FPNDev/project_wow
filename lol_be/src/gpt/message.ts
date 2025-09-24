@@ -13,30 +13,28 @@ interface MessageConfig {
   message: string;
 }
 
-type QueueEntry = [Omit<MessageConfig, 'threadId'>, Observable<string>];
+type QueueEntry = [string, Observable<string>];
 
 const MessageQueue: Record<string, QueueEntry[]> = {};
 const queueRunning: Record<string, boolean> = {};
 
-const sendMessage = (
+const sendMessage = async (
   threadId: MessageConfig['threadId'],
   message: MessageConfig['message']
-) =>
-  new Promise<string>((resolve) => {
-    let textValue = '';
-    const textDelta$ = sendMessageReceiveDelta(threadId, message);
-    textDelta$.subscribe((delta) => {
-      textValue += delta;
-    });
-    textDelta$.subscribeDone(() => resolve(textValue));
-  });
+) => {
+  let text = '';
+  for await (const delta of sendMessageReceiveDelta(threadId, message)) {
+    text += delta;
+  }
+  return text;
+};
 
 const sendMessageReceiveDelta = (
   threadId: MessageConfig['threadId'],
   message: MessageConfig['message']
 ): Observable<string> => {
   const onTextDelta$ = Observable<string>();
-  const queueEntry = [{ message }, onTextDelta$] as QueueEntry;
+  const queueEntry = [message, onTextDelta$] as QueueEntry;
   if (!queueRunning[threadId]) {
     MessageQueue[threadId] = [queueEntry];
     runMessageQueue(threadId);
@@ -52,13 +50,12 @@ const runMessageQueue = async (threadId: string) => {
 
   let activeRunStream!: AssistantStream;
 
-  const [{ message }, onTextDelta$] = MessageQueue[threadId].shift()!;
+  const [message, onTextDelta$] = MessageQueue[threadId].shift()!;
 
   const createMessageAndStream = async () => {
     const handleAPIError = (restartRequest = false) => {
       if (restartRequest) {
-        MessageQueue[threadId].unshift([{ message }, onTextDelta$]);
-        setTimeout(() => runMessageQueue(threadId), 5000);
+        setTimeout(createMessageAndStream, 5000);
       } else {
         onTextDelta$.done();
       }

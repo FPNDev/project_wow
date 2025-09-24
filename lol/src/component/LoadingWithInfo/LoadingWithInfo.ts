@@ -1,20 +1,21 @@
 import { Component } from '../../local_modules/component/component';
-import { text } from '../../util/dom-manipulation';
+import { text } from '../../local_modules/util/dom-manipulation';
 
 type LoadingStep = {
   text: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   fn: (lastValue?: any) => Promise<unknown>;
 };
 
 export class LoadingWithInfo<T extends unknown[]> extends Component<Text> {
-  readonly loadedPromise$: Promise<any[]>;
+  readonly loadedPromise$: Promise<T>;
 
   constructor(steps: LoadingStep[]) {
     super();
+    
     this.renderStep(steps[0], 0, steps.length);
 
     let stepsChained = Promise.resolve() as Promise<unknown>;
-
     const resolvedValues: unknown[] = [];
     for (let i = 0; i < steps.length; i++) {
       stepsChained = stepsChained

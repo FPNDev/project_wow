@@ -4,7 +4,7 @@ const retry = <T>(fn: () => Promise<T>, tries = 3, timeout = 0): Promise<T> => {
         timeout
           ? new Promise((resolve) =>
               window.setTimeout(
-                () => resolve(retry(fn, tries, timeout)),
+                () => retry(fn, tries, timeout).then(resolve),
                 timeout,
               ),
             )
@@ -12,3 +12,5 @@ const retry = <T>(fn: () => Promise<T>, tries = 3, timeout = 0): Promise<T> => {
       )
     : fn();
 };
+
+export { retry };

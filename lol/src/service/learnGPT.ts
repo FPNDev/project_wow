@@ -57,8 +57,24 @@ const setTopic = (threadId: string, topic: string) => {
   });
 };
 
+const generateDummyQuestion = (num: number): QuestionData => {
+  return {
+    question: `Dummy question #${num + 1}`,
+    answers: [
+      `Dummy answer A for question #${num + 1}`,
+      `Dummy answer B for question #${num + 1}`,
+      `Dummy answer C for question #${num + 1}`,
+      `Dummy answer D for question #${num + 1}`,
+    ],
+    quote: `This is a dummy quote for question #${num + 1}.`,
+  };
+};
+
 const getQuestionFromThread = (threadId: string, questionId?: number) => {
-  return fetch(`${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`).then(async (r) => {
+  return dummifyGetQuestionFromThread(questionId);
+  return fetch(
+    `${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`,
+  ).then(async (r) => {
     if (!r.ok) {
       throw new Error(await r.text());
     }
@@ -66,6 +82,14 @@ const getQuestionFromThread = (threadId: string, questionId?: number) => {
     return r.json() as Promise<QuestionData>;
   });
 };
+
+function dummifyGetQuestionFromThread(questionId?: number) {
+  return new Promise<QuestionData>((resolve) => {
+    setTimeout(() => {
+      resolve(generateDummyQuestion(questionId ?? 0));
+    }, 500);
+  });
+}
 
 export { GPTFileAccept };
 export { createThread, getQuestionFromThread, setTopic };

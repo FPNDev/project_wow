@@ -1,43 +1,59 @@
 import escapeStringRegexp from 'escape-string-regexp';
-import { Route, RouteWithComponent } from './interface/route';
+import {
+  hasCompiledPathForRoute,
+  Route,
+  RouteWithCompiledPath,
+  RouteWithComponent,
+} from './interface/route';
 import { Component } from '../component/component';
 
-const findLocation = (routes: Route[]) => {
+function findLocation(routes: (Route | RouteWithCompiledPath)[]) {
   const path = location.pathname;
 
-  const checkPath = async (
-    routes: readonly Route[],
+  async function checkPath(
+    routes: readonly (Route | RouteWithCompiledPath)[],
     pathPart: string | RegExp = '',
-  ): Promise<RouteWithComponent> => {
-    for (let route of routes) {
+  ): Promise<[RouteWithComponent, RegExpMatchArray | null]> {
+    for (const route of routes) {
       let fullPath: string | RegExp;
 
       let routeMatches = false;
       let fullMatch = false;
+      let regExpMatch = null;
 
       const isNewPathString = typeof route.path === 'string';
       const isOldPathString = typeof pathPart === 'string';
+      const isCompiled = hasCompiledPathForRoute(route);
 
       if (isNewPathString && isOldPathString) {
-        fullPath = pathPart + route.path;
-        routeMatches = path.startsWith(fullPath);
+        if (!isCompiled) {
+          (<RouteWithCompiledPath>route).compiledPath = pathPart + route.path;
+        }
+        fullPath = (<RouteWithCompiledPath>route).compiledPath;
+        routeMatches = path.startsWith(<string>fullPath);
         fullMatch =
           routeMatches && (fullPath === path || fullPath + '/' === path);
       } else {
-        let source = '';
+        if (!isCompiled) {
+          let source = '';
 
-        source += isNewPathString
-          ? escapeStringRegexp(<string>route.path)
-          : (<RegExp>route.path).source;
-        source += isOldPathString
-          ? escapeStringRegexp(<string>pathPart)
-          : (<RegExp>pathPart).source;
+          source += isOldPathString
+            ? escapeStringRegexp(<string>pathPart)
+            : (<RegExp>pathPart).source;
+          source += isNewPathString
+            ? escapeStringRegexp(<string>route.path)
+            : (<RegExp>route.path).source;
 
-        fullPath = new RegExp('^' + source + '/?');
+          (<RouteWithCompiledPath>route).compiledPath = new RegExp(
+            '^' + source + '/?',
+          );
+        }
 
-        const match = path.match(fullPath);
-        routeMatches = !!match;
-        fullMatch = routeMatches && match![0] === path;
+        fullPath = (<RouteWithCompiledPath>route).compiledPath;
+
+        regExpMatch = path.match(fullPath);
+        routeMatches = !!regExpMatch;
+        fullMatch = routeMatches && regExpMatch![0] === path;
       }
 
       if (!routeMatches) {
@@ -47,7 +63,7 @@ const findLocation = (routes: Route[]) => {
       const guardChildren =
         (!route.children?.length && !fullMatch) ||
         !route.guardChildren ||
-        route.guardChildren();
+        route.guardChildren(regExpMatch);
       if (
         (guardChildren instanceof Promise && !(await guardChildren)) ||
         !guardChildren
@@ -56,13 +72,13 @@ const findLocation = (routes: Route[]) => {
       }
 
       if (fullMatch) {
-        const guard = !route.guard || route.guard();
+        const guard = !route.guard || route.guard(regExpMatch);
         if ((guard instanceof Promise && !(await guard)) || !guard) {
           continue;
         }
 
         if ('component' in route && route.component) {
-          return route;
+          return [route, regExpMatch];
         }
       } else if ('children' in route && route.children?.length) {
         const match = checkPath(route.children, fullPath!);
@@ -73,16 +89,16 @@ const findLocation = (routes: Route[]) => {
     }
 
     throw new Error('path not found');
-  };
+  }
 
   return checkPath(routes);
-};
+}
 
-const render = (
+function render(
   element: Element,
   route: RouteWithComponent,
   activeRender?: Component,
-) => {
+) {
   if (typeof route.component === 'string') {
     activeRender?.destroy();
     element.innerHTML = route.component;
@@ -97,22 +113,33 @@ const render = (
   } else if (activeRender) {
     return activeRender;
   }
+}
+export type RouteUpdateEvent = Event & {
+  detail?: {
+    previousPath: RouteWithComponent;
+    currentPath: RouteWithComponent;
+    previousLocation: Location;
+    currentLocation: Location;
+  };
 };
 
-export const setupRouter = (element: Element, routes: Route[]) => {
+export function setupRouter(element: Element, routes: Route[]) {
   let loc: Location;
-  let queuedPromise: Promise<Route> | void;
+  let queuedPromise: Promise<
+    [RouteWithComponent, RegExpMatchArray | null]
+  > | void;
 
   let activeLocation: Location;
   let activePath: RouteWithComponent;
   let activeRender: Component | undefined;
+  let routeParams: Readonly<RegExpMatchArray> | null;
 
   const runNavigation = async () => {
     const oldLoc = loc;
     loc = { ...location };
     if (oldLoc?.href !== loc?.href) {
       const currentPromise = (queuedPromise = findLocation(routes));
-      const foundLocation = await findLocation(routes);
+      const [foundLocation, matchedParams] = await currentPromise;
 
       if (foundLocation && currentPromise === queuedPromise) {
         const previousPath = activePath;
@@ -120,11 +147,16 @@ export const setupRouter = (element: Element, routes: Route[]) => {
 
         activeLocation = loc;
         activePath = foundLocation;
-        activeRender = render(element, activePath, activeRender);
+        routeParams = Object.freeze(matchedParams);
 
-        if (previousPath) {
+        const newRender = render(element, activePath, activeRender);
+        const reusingInstance = newRender === activeRender;
+
+        activeRender = newRender;
+
+        if (reusingInstance) {
           window.dispatchEvent(
-            new CustomEvent('routeChange', {
+            new CustomEvent<RouteUpdateEvent['detail']>('routeUpdate', {
               detail: {
                 previousPath,
                 currentPath: activePath,
@@ -142,9 +174,12 @@ export const setupRouter = (element: Element, routes: Route[]) => {
   runNavigation();
 
   return {
-    go: (url: string) => {
+    go(url: string) {
       history.pushState(null, '', url);
-      runNavigation();
+      return runNavigation();
+    },
+    getQueryParams() {
+      return routeParams;
     },
   };
-};
+}

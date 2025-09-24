@@ -4,7 +4,7 @@ export default () => {
     part.remove();
   }
 
-  const articles = [...document.querySelectorAll('div')];
+  const articles = [...document.querySelectorAll('article')];
   if (articles.length) {
     const findParent = (node, nodeName) => {
       let parent = node.parentNode;
@@ -23,6 +23,8 @@ export default () => {
       .join('\n');
   }
 
-  const main = document.querySelector('main,#main,#content,#main-content');
+  const main = document.querySelector(
+    'main,#main,#content,#main-content,#page-content'
+  );
   return main?.textContent ?? document.body.innerText ?? '';
 };

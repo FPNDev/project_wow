@@ -1,19 +1,34 @@
 import { Component } from '../../component/component';
 
-interface BaseRoute {
+type BaseRoute = {
   path: string | RegExp;
-  guard?: () => Promise<boolean> | boolean;
-  guardChildren?: () => Promise<boolean> | boolean;
-}
+  guard?(queryParams: RegExpMatchArray | null):  Promise<unknown> | unknown;
+  guardChildren?(queryParams: RegExpMatchArray | null): Promise<unknown> | unknown;
+};
 
-export interface RouteWithComponent extends BaseRoute {
+export type RouteWithComponent = BaseRoute & {
   component: string | { new (): Component };
-  children?: never;
-}
+  children?: RouteWithChildren['children'];
+};
 
-export interface RouteWithChildren extends BaseRoute {
+export type RouteWithComponentOnly = RouteWithComponent & {
+  children?: never;
+};
+
+export type RouteWithChildren = BaseRoute & {
   children: readonly Route[];
   component?: never;
-}
+};
+export type FullRoute = BaseRoute & {
+  children: RouteWithChildren['children'];
+  component: RouteWithComponent['component'];
+};
 
-export type Route = RouteWithComponent | RouteWithChildren;
+export type Route = RouteWithComponentOnly | RouteWithChildren | FullRoute;
+export type RouteWithCompiledPath = Route & {
+  compiledPath: string | RegExp;
+};
+
+export function hasCompiledPathForRoute(r: Route): r is RouteWithCompiledPath {
+  return 'compiledPath' in r;
+}

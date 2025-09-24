@@ -5,33 +5,16 @@ import { router } from '../../routing';
 import {
   createThread,
   getQuestionFromThread,
-  GPTFileAccept,
   setTopic,
 } from '../../service/learnGPT';
-import { html } from '../../util/dom-manipulation';
+import { html } from '../../local_modules/util/dom-manipulation';
 import classes from './style.module.scss';
 
 export class Start extends Component {
   render() {
-    const materialField = new TextArea();
+    const materialField = new TextArea('', '', classes.materialField);
     const topicField = new TextArea();
-
-    materialField.node.classList.add(classes.materialField);
-    topicField.node.classList.add(classes.topicField);
-
-    this.connect([materialField, topicField]);
-
-    const fileField = html`<input
-      type="file"
-      multiple
-      accept="${GPTFileAccept}"
-    />` as HTMLInputElement;
-    const fileFieldWrapper = html`
-      <div class="no-display">
-        <h3>та додайте файли (необов'язково)</h3>
-        ${fileField}
-      </div>
-    ` as HTMLDivElement;
+    this.attach([materialField, topicField]);
 
     const continueButton = html`<button class="button ${classes.continueBtn}">
       Продовжити
@@ -46,7 +29,7 @@ export class Start extends Component {
       if (!creatingThread) {
         const textTrimmed = materialField.value.trim();
         const topicTrimmed = topicField.value.trim();
-        if (!textTrimmed && !fileField.files?.length) {
+        if (!textTrimmed) {
           alert('Задайте будь ласка матеріали для обробки');
           return;
         }
@@ -57,7 +40,7 @@ export class Start extends Component {
 
         loadingSteps.push({
           text: 'Оборобляємо матеріали...',
-          fn: () => createThread(textTrimmed, fileField.files),
+          fn: () => createThread(textTrimmed),
         });
         if (topicTrimmed) {
           loadingSteps.push({
@@ -71,8 +54,10 @@ export class Start extends Component {
           fn: (threadId: string) => getQuestionFromThread(threadId, 0),
         });
 
-        const loadingText = new LoadingWithInfo<[string]>(loadingSteps);
-        this.connect([loadingText]);
+        const loadingText = new LoadingWithInfo<[string]>(
+          loadingSteps,
+        );
+        this.attach([loadingText]);
 
         continueButton.classList.add('no-display');
         footer.appendChild(loadingText.node);
@@ -98,12 +83,15 @@ export class Start extends Component {
     return html`
       <div class="${classes.startPage}">
         <h1>Задайте матеріали для роботи</h1>
+
         <h4 class="${classes.headingHint}">
-          підтримуються - текст, посилання. Можна задати декілька матеріалів одразу
+          підтримуються - текст, посилання. Можна задати декілька матеріалів
+          одразу
         </h4>
         ${materialField.node}
+
         <h3>Задайте тему запитань (необов'язково)</h3>
-        ${topicField.node} ${fileFieldWrapper} ${footer}
+        ${topicField.node} ${footer}
       </div>
     `;
   }

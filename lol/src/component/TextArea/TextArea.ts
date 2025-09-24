@@ -1,5 +1,6 @@
 import { Component } from '../../local_modules/component/component';
-import { html, text } from '../../util/dom-manipulation';
+import { html, text } from '../../local_modules/util/dom-manipulation';
+import classes from './style.module.scss';
 
 export class TextArea extends Component<HTMLDivElement> {
   private placeholder = '';
@@ -9,15 +10,19 @@ export class TextArea extends Component<HTMLDivElement> {
     return this._value;
   }
 
-  constructor(value = '', placeholder = '') {
+  constructor(value = '', placeholder = '', className?: string) {
     super();
+
     this._value = value;
     this.placeholder = placeholder;
+    if (className) {
+      this.node.classList.add(className);
+    }
   }
 
   render(): HTMLDivElement {
     const placeholder = html`
-      <div class="textfield-placeholder">${this.placeholder}</div>
+      <div class=${classes.textfieldPlaceholder}>${this.placeholder}</div>
     ` as HTMLDivElement;
     const textField = html`
       <div contenteditable>${this._value}</div>
@@ -69,7 +74,8 @@ export class TextArea extends Component<HTMLDivElement> {
       if (
         ev.code === 'Enter' &&
         ev.shiftKey &&
-        !(<any>navigator).userAgentData?.mobile
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        !(navigator as any).userAgentData?.mobile
       ) {
         ev.preventDefault();
         ev.stopPropagation();
@@ -80,7 +86,7 @@ export class TextArea extends Component<HTMLDivElement> {
     });
 
     return html`
-      <div class="textfield">${textField} ${placeholder}</div>
+      <div class=${classes.textfield}>${textField} ${placeholder}</div>
     ` as HTMLDivElement;
   }
 }

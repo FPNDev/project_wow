@@ -1,6 +1,6 @@
 import { TextArea } from '../../component/TextArea/TextArea';
 import { Component } from '../../local_modules/component/component';
-import { router, routes } from '../../routing';
+import { router } from '../../routing';
 import {
   getQuestionFromThread,
   QuestionData,
@@ -11,7 +11,7 @@ import {
   escHTML,
   html,
   mhtml,
-} from '../../util/dom-manipulation';
+} from '../../local_modules/util/dom-manipulation';
 import { listenerGroup } from '../../util/listeners';
 
 import classes from './style.module.scss';
@@ -28,7 +28,8 @@ export class Thread extends Component {
   private questionIdx = 0;
 
   private loadingQuestion = false;
-  private nextAllowed = false;
+  private controlsAllowed = false;
+  private hasAnswered = false;
 
   render() {
     this.renderBackButton();
@@ -39,7 +40,7 @@ export class Thread extends Component {
     this.parseThreadAndQuestionId();
     this.loadQuestion();
 
-    this.listeners.add(window, 'routeChange', () => {
+    this.listeners.add(window, 'routeUpdate', () => {
       this.parseThreadAndQuestionId();
       this.loadQuestion();
     });
@@ -70,7 +71,9 @@ export class Thread extends Component {
 
       const keyCode = (ev as KeyboardEvent).key;
       if (keyCode === 'Enter' || keyCode === 'ArrowRight' || keyCode === ' ') {
-        this.goNext();
+        if (keyCode === 'ArrowRight' || this.hasAnswered) {
+          this.goNext();
+        }
       } else if (
         (keyCode === 'ArrowLeft' || keyCode === 'Backspace') &&
         this.questionIdx
@@ -94,7 +97,7 @@ export class Thread extends Component {
   }
 
   private goNext() {
-    if (!this.nextAllowed || this.loadingQuestion) {
+    if (!this.controlsAllowed || this.loadingQuestion) {
       return;
     }
 
@@ -106,14 +109,16 @@ export class Thread extends Component {
     this.loadQuestion();
   }
 
-  private allowNext() {
-    this.nextBtn.classList.remove('no-display');
-    this.nextAllowed = true;
+  private allowControls() {
+    this.setBackButtonVisibility();
+    this.nextBtn.classList.remove('no-opacity', 'no-pointer');
+    this.controlsAllowed = true;
   }
 
-  private disallowNext() {
-    this.nextBtn.classList.add('no-display');
-    this.nextAllowed = false;
+  private disallowControls() {
+    this.prevBtn.classList.add('no-opacity', 'no-pointer');
+    this.nextBtn.classList.add('no-opacity', 'no-pointer');
+    this.controlsAllowed = false;
   }
 
   private showQuote(quoteText: string) {
@@ -132,9 +137,11 @@ export class Thread extends Component {
 
   private parseThreadAndQuestionId() {
     let questionIdx;
-    [, this.threadId, questionIdx] = location.pathname.match(
-      routes.thread.path,
-    )!;
+    [, this.threadId, questionIdx] = router.getQueryParams() as [
+      unknown,
+      string,
+      string | undefined,
+    ];
 
     if (questionIdx === undefined) {
       history.replaceState(null, '', `/thread/${this.threadId}/0`);
@@ -157,8 +164,8 @@ export class Thread extends Component {
           );
         }
         btn.classList.add(classes.active);
-        this.allowNext();
         this.showQuote(question.quote);
+        this.hasAnswered = true;
       };
 
       return btn;
@@ -178,25 +185,26 @@ export class Thread extends Component {
   }
 
   private loadQuestion() {
-    this.setBackButtonVisibility();
-    this.disallowNext();
+    this.disallowControls();
 
     if (!this.loadingQuestion) {
       this.loadingQuestion = true;
 
       return getQuestionFromThread(this.threadId, this.questionIdx)
         .then((question) => {
+          this.allowControls();
           this.hideQuote();
+          this.hasAnswered = false;
 
           this.questionElement.innerHTML = '';
           appendChildren(
             this.questionElement,
             mhtml`
-            <h2>#${this.questionIdx + 1}: ${escHTML(question.question)}</h2>
-            <div class="${classes.options}">
-              ${this.renderOptions(question)}
-            </div>
-          `,
+              <h2>#${this.questionIdx + 1}: ${escHTML(question.question)}</h2>
+              <div class="${classes.options}">
+                ${this.renderOptions(question)}
+              </div>
+            `,
           );
 
           this.loadingQuestion = false;
@@ -214,7 +222,7 @@ export class Thread extends Component {
             this.loadingQuestion = false;
             this.goPrev();
           } else {
-            router.go('/'); 
+            router.go('/');
           }
         });
     }
@@ -233,24 +241,21 @@ export class Thread extends Component {
       this.prevBtn = html`<button class="button ${classes.backBtn}">
         Prev
       </button>` as HTMLButtonElement;
-      this.setBackButtonVisibility();
       this.prevBtn.onclick = () => this.goPrev();
     }
-
-    return this.prevBtn;
   }
 
   private setBackButtonVisibility() {
     if (this.questionIdx === 0) {
-      this.prevBtn.classList.add('no-display');
-    } else if (this.prevBtn.classList.contains('no-display')) {
-      this.prevBtn.classList.remove('no-display');
+      this.prevBtn.classList.add('no-opacity', 'no-pointer');
+    } else {
+      this.prevBtn.classList.remove('no-opacity', 'no-pointer');
     }
   }
 
   private renderNextButton() {
     if (!this.nextBtn) {
-      this.nextBtn = html`<button class="button no-display ${classes.nextBtn}">
+      this.nextBtn = html`<button class="button ${classes.nextBtn}">
         Next
       </button>` as HTMLButtonElement;
 
@@ -259,31 +264,36 @@ export class Thread extends Component {
   }
 
   private renderTopicInput() {
-    const inputElement = new TextArea('', 'Questions topic (any format)');
+    const topicInput = new TextArea(
+      '',
+      'Questions topic (any format)',
+      classes.topicField,
+    );
+    this.attach([topicInput]);
+
     const submitBtn = html`<button class="button">
       OK
     </button>` as HTMLButtonElement;
 
-    this.connect([inputElement]);
-
-    submitBtn.onclick = inputElement.node.onsubmit = async () => {
+    submitBtn.onclick = topicInput.node.onsubmit = async () => {
       submitBtn.classList.add('disabled');
 
-      const newTopic = inputElement.value.trim();
+      const newTopic = topicInput.value.trim();
       try {
         const topicStartsAt = await setTopic(this.threadId, newTopic);
 
         alert(
           `Тему змінено на "${newTopic}".\nТему змінено після питання #${topicStartsAt}`,
         );
-      } catch (e) {
-      } finally {
+      } catch {
+        alert('Не вдалося змінити тему. Спробуйте пізніше.');
       }
+
       submitBtn.classList.remove('disabled');
     };
 
     return html`<div class="${classes.topicSection}">
-      ${inputElement.node} ${submitBtn}
+      ${topicInput.node} ${submitBtn}
     </div>`;
   }
 }
