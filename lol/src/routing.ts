@@ -22,5 +22,4 @@ const router = setupRouter(
   routes,
 );
 
-export { ThreadRoute };
 export { router };
