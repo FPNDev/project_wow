@@ -11,7 +11,7 @@ import { html } from '../../local_modules/util/dom-manipulation';
 import classes from './style.module.scss';
 
 export class Start extends Component {
-  render() {
+  view() {
     const materialField = new TextArea('', '', classes.materialField);
     const topicField = new TextArea();
     this.attach([materialField, topicField]);
@@ -60,7 +60,7 @@ export class Start extends Component {
         this.attach([loadingText]);
 
         continueButton.classList.add('no-display');
-        footer.appendChild(loadingText.node);
+        footer.appendChild(loadingText.createView());
 
         let newThread!: string;
 

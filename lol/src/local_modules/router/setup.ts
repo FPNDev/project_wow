@@ -107,7 +107,7 @@ function render(
     element.innerHTML = '';
 
     const instance = new route.component();
-    element.appendChild(instance.node);
+    element.appendChild(instance.createView());
 
     return instance;
   } else if (activeRender) {

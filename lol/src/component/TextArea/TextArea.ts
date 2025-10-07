@@ -3,7 +3,6 @@ import { html, text } from '../../local_modules/util/dom-manipulation';
 import classes from './style.module.scss';
 
 export class TextArea extends Component<HTMLDivElement> {
-  private placeholder = '';
   private _value = '';
 
   get value() {
@@ -12,17 +11,16 @@ export class TextArea extends Component<HTMLDivElement> {
 
   constructor(value = '', placeholder = '', className?: string) {
     super();
-
     this._value = value;
-    this.placeholder = placeholder;
-    if (className) {
-      this.node.classList.add(className);
-    }
+    this.createView(placeholder, className);
   }
 
-  render(): HTMLDivElement {
+  view(
+    placeholderText: string,
+    className?: string,
+  ): HTMLDivElement {
     const placeholder = html`
-      <div class=${classes.textfieldPlaceholder}>${this.placeholder}</div>
+      <div class=${classes.textfieldPlaceholder}>${placeholderText}</div>
     ` as HTMLDivElement;
     const textField = html`
       <div contenteditable>${this._value}</div>
@@ -86,7 +84,9 @@ export class TextArea extends Component<HTMLDivElement> {
     });
 
     return html`
-      <div class=${classes.textfield}>${textField} ${placeholder}</div>
+      <div class="${classes.textfield} ${className}">
+        ${textField} ${placeholder}
+      </div>
     ` as HTMLDivElement;
   }
 }

@@ -1,38 +1,58 @@
-type ProtoWithEventListeners = {
-  addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
-  ): void;
-  removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: object,
-  ): void;
-};
-
 class ListenerGroup {
   listeners: [
-    ProtoWithEventListeners,
+    EventTarget,
     string,
     EventListenerOrEventListenerObject,
-    object,
+    boolean | AddEventListenerOptions | undefined,
   ][] = [];
 
+  // HTMLElement overloads
+  add<K extends keyof HTMLElementEventMap>(
+    object: HTMLElement,
+    type: K,
+    listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => unknown,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+
+  // Window overloads
+  add<K extends keyof WindowEventMap>(
+    object: Window,
+    type: K,
+    listener: (this: Window, ev: WindowEventMap[K]) => unknown,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+
+  // Document overloads
+  add<K extends keyof DocumentEventMap>(
+    object: Document,
+    type: K,
+    listener: (this: Document, ev: DocumentEventMap[K]) => unknown,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+
+  // Generic fallback for custom events or any EventTarget
   add(
-    object: ProtoWithEventListeners,
+    object: EventTarget,
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | EventListenerOptions,
+    options?: boolean | AddEventListenerOptions,
+  ): void;
+
+  // Implementation (must be last)
+  add(
+    object: EventTarget,
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions,
   ): void {
     object.addEventListener(type, listener, options);
-    this.listeners.push([object, type, listener, object]);
+    this.listeners.push([object, type, listener, options]);
   }
 
   stopAll() {
     for (let i = 0; i < this.listeners.length; i++) {
-      const [object, type, listener, context] = this.listeners[i];
-      object.removeEventListener(type, listener, context);
+      const [object, type, listener, options] = this.listeners[i];
+      object.removeEventListener(type, listener, options);
     }
 
     this.listeners = [];

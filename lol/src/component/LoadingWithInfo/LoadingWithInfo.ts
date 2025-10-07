@@ -12,8 +12,6 @@ export class LoadingWithInfo<T extends unknown[]> extends Component<Text> {
 
   constructor(steps: LoadingStep[]) {
     super();
-    
-    this.renderStep(steps[0], 0, steps.length);
 
     let stepsChained = Promise.resolve() as Promise<unknown>;
     const resolvedValues: unknown[] = [];
@@ -31,9 +29,12 @@ export class LoadingWithInfo<T extends unknown[]> extends Component<Text> {
     }
 
     this.loadedPromise$ = stepsChained as Promise<T>;
+
+    this.createView();
+    this.renderStep(steps[0], 0, steps.length);
   }
 
-  render(): Text {
+  view(): Text {
     return text();
   }
 

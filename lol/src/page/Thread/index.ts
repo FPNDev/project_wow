@@ -12,7 +12,7 @@ import {
   html,
   mhtml,
 } from '../../local_modules/util/dom-manipulation';
-import { listenerGroup } from '../../util/listeners';
+import { listenerGroup } from '../../local_modules/util/listeners';
 
 import classes from './style.module.scss';
 
@@ -31,9 +31,10 @@ export class Thread extends Component {
   private controlsAllowed = false;
   private hasAnswered = false;
 
-  render() {
-    this.renderBackButton();
-    this.renderNextButton();
+  constructor() {
+    super();
+
+    this.createView();
 
     this.addKeyEventListeners();
 
@@ -44,6 +45,11 @@ export class Thread extends Component {
       this.parseThreadAndQuestionId();
       this.loadQuestion();
     });
+  }
+
+  view() {
+    this.renderBackButton();
+    this.renderNextButton();
 
     return html`
       <div class="${classes.thread}">

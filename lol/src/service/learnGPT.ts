@@ -17,6 +17,8 @@ const createThread = (text: string, files?: FileList | null) => {
     }
   }
 
+  return new Promise(resolve => setTimeout(() => resolve('dummythreadid'), 5000));
+
   return fetch(`${ApiURL}/create`, {
     method: 'POST',
     body: formData,
@@ -35,6 +37,8 @@ const createThread = (text: string, files?: FileList | null) => {
 };
 
 const setTopic = (threadId: string, topic: string) => {
+  return new Promise(resolve => setTimeout(() => resolve(Math.round(Math.random() * 15)), 5000));
+
   return fetch(`${ApiURL}/${threadId}/topic`, {
     method: 'POST',
     headers: {

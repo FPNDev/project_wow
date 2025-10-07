@@ -1,12 +1,16 @@
 abstract class Component<T extends Node = Node> {
   private _childComponents = new Set<Component>();
-  private _node?: T;
-
+  // MUST RENDER BEFORE ACCESSING NODE. RENDER IN CONSTRUCTOR WHEN POSSIBLE
+  private _node!: T;
   get node() {
-    return (this._node ||= this.render());
+    return this._node;
   }
 
-  abstract render(): T;
+  createView(...args: unknown[]) {
+    return (this._node ||= this.view(...args));
+  }
+
+  abstract view(...args: unknown[]): T;
 
   attach(childComponents: Component[]) {
     for (let i = 0, len = childComponents.length; i < len; i++) {
