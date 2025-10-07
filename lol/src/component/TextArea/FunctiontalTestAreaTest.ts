@@ -9,12 +9,10 @@ export function TextAreaTest(
 ) {
   const listeners = listenerGroup();
 
-  const placeholder = html`
-    <div class=${classes.textfieldPlaceholder}>${placeholderText}</div>
-  ` as HTMLDivElement;
-  const textField = html`
-    <div contenteditable>${value}</div>
-  ` as HTMLDivElement;
+  const placeholder = <HTMLDivElement>(
+    html`<div class=${classes.textfieldPlaceholder}>${placeholderText}</div>`
+  );
+  const textField = <HTMLDivElement>html`<div contenteditable>${value}</div>`;
 
   const showOrHidePlaceholder = () => {
     if (value.length) {
@@ -26,7 +24,7 @@ export function TextAreaTest(
   showOrHidePlaceholder();
 
   listeners.add(textField, 'input', () => {
-    value = textField.innerText.replace(/^\n/, '');
+    value = textField.textContent!.replace(/^\n/, '');
     showOrHidePlaceholder();
   });
   listeners.add(textField, 'paste', (e) => {
@@ -73,11 +71,13 @@ export function TextAreaTest(
     }
   });
 
-  const componentRender = html`
-    <div class="${classes.textfield} ${className}">
-      ${textField} ${placeholder}
-    </div>
-  ` as HTMLDivElement;
+  const componentRender = <HTMLDivElement>(
+    html`
+      <div class="${classes.textfield} ${className}">
+        ${textField} ${placeholder}
+      </div>
+    `
+  );
 
   return [
     componentRender,

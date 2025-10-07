@@ -1,5 +1,5 @@
 import { Component } from '../../local_modules/component/component';
-import { html, text } from '../../local_modules/util/dom-manipulation';
+import { element, html } from '../../local_modules/util/dom-manipulation';
 import classes from './style.module.scss';
 
 export class TextArea extends Component<HTMLDivElement> {
@@ -15,16 +15,15 @@ export class TextArea extends Component<HTMLDivElement> {
     this.createView(placeholder, className);
   }
 
-  view(
-    placeholderText: string,
-    className?: string,
-  ): HTMLDivElement {
-    const placeholder = html`
-      <div class=${classes.textfieldPlaceholder}>${placeholderText}</div>
-    ` as HTMLDivElement;
-    const textField = html`
-      <div contenteditable>${this._value}</div>
-    ` as HTMLDivElement;
+  view(placeholderText: string, className?: string): HTMLDivElement {
+    const placeholder = <HTMLDivElement>(
+      html`
+        <div class=${classes.textfieldPlaceholder}>${placeholderText}</div>
+      `
+    );
+    const textField = <HTMLDivElement>(
+      html`<div contenteditable>${this._value}</div>`
+    );
 
     const showOrHidePlaceholder = () => {
       if (this._value.length) {
@@ -36,33 +35,51 @@ export class TextArea extends Component<HTMLDivElement> {
     showOrHidePlaceholder();
 
     textField.addEventListener('input', () => {
-      this._value = textField.innerText.replace(/^\n/, '');
+      this._value = textField.innerText.trim();
       showOrHidePlaceholder();
     });
     textField.addEventListener('paste', (e) => {
       e.preventDefault();
-      const plainText = e.clipboardData?.getData('text/plain') ?? '';
+
+      // replace windows style new lines with unix style ones
+      // to keep caret visibility after paste
+      const plainText =
+        e.clipboardData?.getData('Text').replace(/\r\n/g, '\n') ?? '';
+
       const currentSelection = document.getSelection()!;
-
       const firstRange = currentSelection.getRangeAt(0)!;
-      let range = firstRange;
-      let idx = 0;
-      do {
+      // remove all selected content
+      firstRange.deleteContents();
+      while (currentSelection.rangeCount > 1) {
+        const range = currentSelection.getRangeAt(1);
         range.deleteContents();
-      } while (
-        ++idx < currentSelection.rangeCount &&
-        (range = currentSelection.getRangeAt(idx))
-      );
-      currentSelection.removeAllRanges();
+        currentSelection.removeRange(range);
+      }
 
-      firstRange.insertNode(text(plainText));
+      const insertedNode = element('span');
+      insertedNode.textContent = plainText;
+      firstRange.insertNode(insertedNode);
+      firstRange.collapse(false);
 
-      const selectionControl = getSelection()!;
-      selectionControl.removeAllRanges();
-      selectionControl.addRange(firstRange);
-      selectionControl.collapseToEnd();
+      const rightDiff =
+        insertedNode.offsetLeft +
+        insertedNode.offsetWidth -
+        textField.scrollLeft -
+        textField.offsetWidth;
 
-      textField.scrollTop = textField.scrollHeight;
+      const bottomDiff =
+        insertedNode.offsetTop +
+        insertedNode.offsetHeight -
+        scrollableFieldWrapper.scrollTop -
+        scrollableFieldWrapper.clientHeight;
+
+      if (rightDiff > 0) {
+        textField.scrollLeft += rightDiff;
+      }
+      if (bottomDiff > 0) {
+        scrollableFieldWrapper.scrollTop += bottomDiff;
+      }
+
       textField.dispatchEvent(
         new InputEvent('input', { inputType: 'insertFromPaste' }),
       );
@@ -83,9 +100,17 @@ export class TextArea extends Component<HTMLDivElement> {
       }
     });
 
+    const scrollableFieldWrapper = <HTMLDivElement>(
+      html`
+        <div class="${classes.textfieldContent} textfield-content">
+          ${textField}
+        </div>
+      `
+    );
+
     return html`
       <div class="${classes.textfield} ${className}">
-        ${textField} ${placeholder}
+        ${placeholder} ${scrollableFieldWrapper}
       </div>
     ` as HTMLDivElement;
   }

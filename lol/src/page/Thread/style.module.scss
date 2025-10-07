@@ -84,8 +84,13 @@
     min-height: 3.5rem;
     max-height: 3.5rem;
     width: 100%;
+    --white-space: nowrap;
 
     [contenteditable] {
+      overflow: hidden;
+    }
+
+    :global(.textfield-content) {
       max-width: calc(100% - 3.5rem);
     }
   }

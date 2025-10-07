@@ -8,6 +8,7 @@ import {
 } from '../../service/learnGPT';
 import {
   appendChildren,
+  element,
   escHTML,
   html,
   mhtml,
@@ -136,9 +137,9 @@ export class Thread extends Component {
   }
 
   private renderQuote() {
-    return (this.quoteElement = html`<div
-      class="${classes.quote} no-display"
-    ></div>` as HTMLDivElement);
+    return (this.quoteElement = <HTMLDivElement>(
+      html`<div class="${classes.quote} no-display"></div>`
+    ));
   }
 
   private parseThreadAndQuestionId() {
@@ -157,9 +158,11 @@ export class Thread extends Component {
 
   private renderOptions(question: QuestionData) {
     const optionBtns = question.answers.map((answer) => {
-      const btn = html`<button class="button ${classes.option}">
-        ${escHTML(answer)}
-      </button>` as HTMLButtonElement;
+      const btn = <HTMLButtonElement>(
+        html`<button class="button ${classes.option}">
+          ${escHTML(answer)}
+        </button>`
+      );
 
       btn.onclick = () => {
         for (let i = 0; i < optionBtns.length; i++) {
@@ -175,7 +178,7 @@ export class Thread extends Component {
       };
 
       return btn;
-    }) as HTMLButtonElement[];
+    });
 
     const randomOrderBtns = [...optionBtns];
 
@@ -237,16 +240,14 @@ export class Thread extends Component {
   }
 
   private renderQuestion() {
-    return (this.questionElement ||= html`<div
-      class="${classes.questionSection}"
-    ></div>` as HTMLDivElement);
+    return (this.questionElement ||= element('div'));
   }
 
   private renderBackButton() {
     if (!this.prevBtn) {
-      this.prevBtn = html`<button class="button ${classes.backBtn}">
-        Prev
-      </button>` as HTMLButtonElement;
+      this.prevBtn = <HTMLButtonElement>(
+        html`<button class="button ${classes.backBtn}">Prev</button>`
+      );
       this.prevBtn.onclick = () => this.goPrev();
     }
   }
@@ -261,9 +262,9 @@ export class Thread extends Component {
 
   private renderNextButton() {
     if (!this.nextBtn) {
-      this.nextBtn = html`<button class="button ${classes.nextBtn}">
-        Next
-      </button>` as HTMLButtonElement;
+      this.nextBtn = <HTMLButtonElement>(
+        html`<button class="button ${classes.nextBtn}">Next</button>`
+      );
 
       this.nextBtn.onclick = () => this.goNext();
     }
@@ -277,9 +278,9 @@ export class Thread extends Component {
     );
     this.attach([topicInput]);
 
-    const submitBtn = html`<button class="button">
-      OK
-    </button>` as HTMLButtonElement;
+    const submitBtn = <HTMLButtonElement>(
+      html`<button class="button">OK</button>`
+    );
 
     submitBtn.onclick = topicInput.node.onsubmit = async () => {
       submitBtn.classList.add('disabled');

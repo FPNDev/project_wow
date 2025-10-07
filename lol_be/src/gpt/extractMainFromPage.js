@@ -19,12 +19,12 @@ export default () => {
 
     return articles
       .filter((a) => !findParent(a, 'ARTICLE'))
-      .map((v) => v.innerText)
+      .map((v) => v.textContent)
       .join('\n');
   }
 
   const main = document.querySelector(
     'main,#main,#content,#main-content,#page-content'
   );
-  return main?.textContent ?? document.body.innerText ?? '';
+  return main?.textContent ?? document.body.textContent ?? '';
 };

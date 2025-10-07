@@ -17,12 +17,12 @@ const htmlRenderer = element('body');
 const HTMLReplacementComment = '__htmlelement';
 
 export function escHTML(text: string) {
-  htmlRenderer.innerText = text;
+  htmlRenderer.textContent = text;
   return htmlRenderer.innerHTML;
 }
 export function unescHTML(text: string) {
   htmlRenderer.innerHTML = text;
-  return htmlRenderer.innerText;
+  return htmlRenderer.textContent;
 }
 
 export function html(
@@ -36,7 +36,7 @@ export function html(
   }
 
   throw new Error(
-    'html literal used incorrectly, cannot find root or found multiple roots for given string literal'
+    'html literal used incorrectly, cannot find root or found multiple roots for given string literal',
   );
 }
 
@@ -67,7 +67,7 @@ export function mhtml(
     finalString += strings[idx];
     if (idx < values.length) {
       recursiveReplaceElements(
-        Array.isArray(values[idx]) ? (values[idx] as unknown[]) : [values[idx]]
+        Array.isArray(values[idx]) ? (values[idx] as unknown[]) : [values[idx]],
       );
     }
   }
@@ -82,7 +82,7 @@ export function mhtml(
       (node) =>
         node.nodeValue === HTMLReplacementComment
           ? NodeFilter.FILTER_ACCEPT
-          : NodeFilter.FILTER_SKIP
+          : NodeFilter.FILTER_SKIP,
     );
     let nextNode: Node | null;
     while ((nextNode = iter.nextNode())) {

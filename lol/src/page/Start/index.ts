@@ -16,13 +16,13 @@ export class Start extends Component {
     const topicField = new TextArea();
     this.attach([materialField, topicField]);
 
-    const continueButton = html`<button class="button ${classes.continueBtn}">
-      Продовжити
-    </button>` as HTMLButtonElement;
+    const continueButton = <HTMLButtonElement>(
+      html`<button class="button ${classes.continueBtn}">Продовжити</button>`
+    );
 
-    const footer = html`
-      <div class="${classes.footer}">${continueButton}</div>
-    `;
+    const footer = <HTMLDivElement>(
+      html` <div class="${classes.footer}">${continueButton}</div> `
+    );
 
     let creatingThread = false;
     continueButton.onclick = materialField.node.onsubmit = async () => {
@@ -54,9 +54,7 @@ export class Start extends Component {
           fn: (threadId: string) => getQuestionFromThread(threadId, 0),
         });
 
-        const loadingText = new LoadingWithInfo<[string]>(
-          loadingSteps,
-        );
+        const loadingText = new LoadingWithInfo<[string]>(loadingSteps);
         this.attach([loadingText]);
 
         continueButton.classList.add('no-display');
