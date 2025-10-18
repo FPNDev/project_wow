@@ -1,20 +1,22 @@
 type Observer<T> = (data: T) => void;
-type Pipe<T, K> = (data: T) => K;
+type Pipe<T, K> = (data: T) => K | Promise<K>;
 
 interface Notifier<T> {
-  (arg: T extends void ? Partial<T> : T): void;
+  (data: T): void;
 }
 
 interface Observable<T> {
   subscribe: (observer: Observer<T>) => () => void;
   subscribeDone: (observer: () => void) => void;
-  pipe: <K>(pipe: Pipe<unknown, unknown>) => Observable<K>;
+  pipe: <K>(pipe: Pipe<T, K>) => Observable<K>;
   notify: Notifier<T>;
   done: () => void;
   readonly closed: boolean;
 }
 
-const Observable = <T>(pipes: Pipe<unknown, unknown>[] = []): Observable<T> => {
+const Observable = <T>(
+  pipes?: [...Pipe<unknown, unknown>[], Pipe<unknown, T>]
+): Observable<T> => {
   const observers: Parameters<Observable<T>['subscribe']>[0][] = [];
   const doneObservers: Parameters<Observable<T>['subscribeDone']>[0][] = [];
 
@@ -36,26 +38,37 @@ const Observable = <T>(pipes: Pipe<unknown, unknown>[] = []): Observable<T> => {
     doneObservers.push(observer);
   };
 
-  const notify = ((data: T) => {
+  const notify = async (data: T) => {
     if (!open) {
       return;
     }
 
-    const pipedData = pipes.reduce(
-      (acc: unknown, pipe) => pipe(acc) as unknown,
-      data
-    ) as T;
-    for (const observer of observers) {
-      observer(pipedData);
+    let pipedData: unknown = data;
+    if (pipes) {
+      for (let i = 0, pipesLen = pipes.length; open && i < pipesLen; i++) {
+        pipedData = pipes[i](pipedData);
+        if (pipedData instanceof Promise) {
+          pipedData = await pipedData;
+        }
+      }
     }
-  }) as Notifier<T>;
+
+    // Check if still open after async pipes
+    if (!open) {
+      return;
+    }
+
+    for (const observer of observers) {
+      observer(<T>pipedData);
+    }
+  };
 
   return {
     subscribe,
     subscribeDone,
     notify,
-    pipe: <K>(pipe: Pipe<unknown, unknown>) =>
-      Observable<K>([...pipes, pipe]) as Observable<K>,
+    pipe: <K>(pipe: Pipe<T, K>) =>
+      Observable<K>([...(pipes ?? []), pipe as Pipe<unknown, K>]),
     done: () => {
       if (!open) {
         return;
