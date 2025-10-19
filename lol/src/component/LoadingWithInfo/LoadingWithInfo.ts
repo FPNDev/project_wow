@@ -22,17 +22,17 @@ export class LoadingWithInfo<T> extends Component<Text> {
       };
     }) as Promise<unknown>;
 
-    const resolvedValues: unknown[] = [];
+    let currentVM: unknown;
     for (let i = 0; i < steps.length; i++) {
       stepsChained = stepsChained
-        .then(() => steps[i].fn(i ? resolvedValues[i - 1] : undefined))
+        .then(() => steps[i].fn(currentVM))
         .then((v) => {
-          resolvedValues.push(v);
           if (i < steps.length - 1) {
             this.renderStep(steps[i + 1], i + 1, steps.length);
           } else {
             return v;
           }
+          currentVM = v;
         });
     }
 

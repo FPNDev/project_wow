@@ -30,9 +30,9 @@ export class Start extends Component {
     let creatingThread = false;
     continueButton.onclick = materialFieldView.onsubmit = async () => {
       if (!creatingThread) {
-        const textTrimmed = materialField.value.trim();
-        const topicTrimmed = topicField.value.trim();
-        if (!textTrimmed) {
+        const text = materialField.value;
+        const topic = topicField.value;
+        if (!text) {
           alert('Задайте будь ласка матеріали для обробки');
           return;
         }
@@ -43,27 +43,27 @@ export class Start extends Component {
 
         loadingSteps.push({
           text: 'Оборобляємо матеріали...',
-          fn: () => createThread(textTrimmed),
+          fn: () => createThread(text),
         });
-        if (topicTrimmed) {
+        if (topic) {
           loadingSteps.push({
             text: 'Встановлюємо тему...',
             fn: (threadId: string) =>
-              setTopic(threadId, topicTrimmed).then(() => threadId),
+              setTopic(threadId!, topic).then(() => threadId!),
           });
         }
         loadingSteps.push({
           text: 'Створюємо питання...',
-          fn: (threadId: string) => getQuestionFromThread(threadId, 0),
+          fn: (threadId: string) =>
+            getQuestionFromThread(threadId!, 0).then(() => threadId),
         });
-
         const loadingText = new LoadingWithInfo<string>(loadingSteps);
         this.attach([loadingText]);
 
         continueButton.classList.add('no-display');
         footer.appendChild(loadingText.ensureView());
 
-        let newThread!: string;
+        let newThread: string | undefined;
 
         try {
           newThread = await loadingText.start();

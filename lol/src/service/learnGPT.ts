@@ -17,48 +17,52 @@ const createThread = (text: string, files?: FileList | null) => {
     }
   }
 
-  return new Promise(resolve => setTimeout(() => resolve('dummythreadid'), 5000));
+  return new Promise<string>((resolve) =>
+    setTimeout(() => resolve('dummythreadid'), 5000),
+  );
 
-  return fetch(`${ApiURL}/create`, {
-    method: 'POST',
-    body: formData,
-  }).then(async (r) => {
-    if (!r.ok) {
-      return Promise.reject(r);
-    }
+  // return fetch(`${ApiURL}/create`, {
+  //   method: 'POST',
+  //   body: formData,
+  // }).then(async (r) => {
+  //   if (!r.ok) {
+  //     return Promise.reject(r);
+  //   }
 
-    const resp = await r.json();
-    if (!resp.ok) {
-      throw new Error(resp.errorMessage);
-    } else {
-      return resp.threadId;
-    }
-  });
+  //   const resp = await r.json();
+  //   if (!resp.ok) {
+  //     throw new Error(resp.errorMessage);
+  //   } else {
+  //     return resp.threadId;
+  //   }
+  // });
 };
 
 const setTopic = (threadId: string, topic: string) => {
-  return new Promise(resolve => setTimeout(() => resolve(Math.round(Math.random() * 15)), 5000));
+  return new Promise((resolve) =>
+    setTimeout(() => resolve(Math.round(Math.random() * 15)), 5000),
+  );
 
-  return fetch(`${ApiURL}/${threadId}/topic`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      topic,
-    }),
-  }).then(async (r) => {
-    if (!r.ok) {
-      return Promise.reject(r);
-    }
+  // return fetch(`${ApiURL}/${threadId}/topic`, {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body: JSON.stringify({
+  //     topic,
+  //   }),
+  // }).then(async (r) => {
+  //   if (!r.ok) {
+  //     return Promise.reject(r);
+  //   }
 
-    const resp = await r.json();
-    if (!resp.ok) {
-      throw new Error(resp.errorMessage);
-    } else {
-      return resp.startsAt;
-    }
-  });
+  //   const resp = await r.json();
+  //   if (!resp.ok) {
+  //     throw new Error(resp.errorMessage);
+  //   } else {
+  //     return resp.startsAt;
+  //   }
+  // });
 };
 
 const generateDummyQuestion = (num: number): QuestionData => {
@@ -76,15 +80,15 @@ const generateDummyQuestion = (num: number): QuestionData => {
 
 const getQuestionFromThread = (threadId: string, questionId?: number) => {
   return dummifyGetQuestionFromThread(questionId);
-  return fetch(
-    `${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`,
-  ).then(async (r) => {
-    if (!r.ok) {
-      throw new Error(await r.text());
-    }
+  // return fetch(
+  //   `${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`,
+  // ).then(async (r) => {
+  //   if (!r.ok) {
+  //     throw new Error(await r.text());
+  //   }
 
-    return r.json() as Promise<QuestionData>;
-  });
+  //   return r.json() as Promise<QuestionData>;
+  // });
 };
 
 function dummifyGetQuestionFromThread(questionId?: number) {
