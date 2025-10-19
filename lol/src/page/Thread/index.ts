@@ -9,16 +9,16 @@ import {
 import {
   appendChildren,
   element,
-  escHTML,
+  escapeHTML,
   html,
   mhtml,
 } from '../../local_modules/util/dom-manipulation';
-import { listenerGroup } from '../../local_modules/util/listeners';
+import { eventSystem } from '../../local_modules/util/listeners';
 
 import classes from './style.module.scss';
 
 export class Thread extends Component {
-  private listeners = listenerGroup();
+  private events = eventSystem();
 
   private questionElement!: HTMLElement;
   private quoteElement!: HTMLElement;
@@ -35,14 +35,14 @@ export class Thread extends Component {
   constructor() {
     super();
 
-    this.createView();
+    this.ensureView();
 
     this.addKeyEventListeners();
 
     this.parseThreadAndQuestionId();
     this.loadQuestion();
 
-    this.listeners.add(window, 'routeUpdate', () => {
+    this.events.add(window, 'routeUpdate', () => {
       this.parseThreadAndQuestionId();
       this.loadQuestion();
     });
@@ -64,11 +64,11 @@ export class Thread extends Component {
   }
 
   onDisconnect(): void {
-    this.listeners.stopAll();
+    this.events.stopAll();
   }
 
   private addKeyEventListeners() {
-    this.listeners.add(document, 'keydown', (ev) => {
+    this.events.add(document, 'keydown', (ev) => {
       if (
         document.activeElement &&
         document.activeElement.hasAttribute('contenteditable')
@@ -160,7 +160,7 @@ export class Thread extends Component {
     const optionBtns = question.answers.map((answer) => {
       const btn = <HTMLButtonElement>(
         html`<button class="button ${classes.option}">
-          ${escHTML(answer)}
+          ${escapeHTML(answer)}
         </button>`
       );
 
@@ -209,7 +209,7 @@ export class Thread extends Component {
           appendChildren(
             this.questionElement,
             mhtml`
-              <h2>#${this.questionIdx + 1}: ${escHTML(question.question)}</h2>
+              <h2>#${this.questionIdx + 1}: ${escapeHTML(question.question)}</h2>
               <div class="${classes.options}">
                 ${this.renderOptions(question)}
               </div>
@@ -271,18 +271,16 @@ export class Thread extends Component {
   }
 
   private renderTopicInput() {
-    const topicInput = new TextArea(
-      '',
-      'Questions topic (any format)',
-      classes.topicField,
-    );
+    const topicInput = new TextArea('', '', classes.topicField);
     this.attach([topicInput]);
+
+    const topicInputView = topicInput.ensureView();
 
     const submitBtn = <HTMLButtonElement>(
       html`<button class="button">OK</button>`
     );
 
-    submitBtn.onclick = topicInput.node.onsubmit = async () => {
+    submitBtn.onclick = topicInputView.onsubmit = async () => {
       submitBtn.classList.add('disabled');
 
       const newTopic = topicInput.value.trim();
@@ -300,7 +298,7 @@ export class Thread extends Component {
     };
 
     return html`<div class="${classes.topicSection}">
-      ${topicInput.node} ${submitBtn}
+      ${topicInput} ${submitBtn}
     </div>`;
   }
 }

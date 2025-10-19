@@ -9,13 +9,15 @@ export class TextArea extends Component<HTMLDivElement> {
     return this._value;
   }
 
-  constructor(value = '', placeholder = '', className?: string) {
+  constructor(value = '', placeholder?: string, className?: string) {
     super();
     this._value = value;
-    this.createView(placeholder, className);
+    if (placeholder || className) {
+      this.ensureView(placeholder, className);
+    }
   }
 
-  view(placeholderText: string, className?: string): HTMLDivElement {
+  view(placeholderText = '', className?: string): HTMLDivElement {
     const placeholder = <HTMLDivElement>(
       html`
         <div class=${classes.textfieldPlaceholder}>${placeholderText}</div>

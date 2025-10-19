@@ -12,9 +12,12 @@ import classes from './style.module.scss';
 
 export class Start extends Component {
   view() {
-    const materialField = new TextArea('', '', classes.materialField);
-    const topicField = new TextArea();
+    const materialField = new TextArea('', 'Material', classes.materialField);
+    const topicField = new TextArea('', 'Topic (optional)', classes.topicField);
+
     this.attach([materialField, topicField]);
+
+    const materialFieldView = materialField.ensureView();
 
     const continueButton = <HTMLButtonElement>(
       html`<button class="button ${classes.continueBtn}">Продовжити</button>`
@@ -25,7 +28,7 @@ export class Start extends Component {
     );
 
     let creatingThread = false;
-    continueButton.onclick = materialField.node.onsubmit = async () => {
+    continueButton.onclick = materialFieldView.onsubmit = async () => {
       if (!creatingThread) {
         const textTrimmed = materialField.value.trim();
         const topicTrimmed = topicField.value.trim();
@@ -54,16 +57,16 @@ export class Start extends Component {
           fn: (threadId: string) => getQuestionFromThread(threadId, 0),
         });
 
-        const loadingText = new LoadingWithInfo<[string]>(loadingSteps);
+        const loadingText = new LoadingWithInfo<string>(loadingSteps);
         this.attach([loadingText]);
 
         continueButton.classList.add('no-display');
-        footer.appendChild(loadingText.createView());
+        footer.appendChild(loadingText.ensureView());
 
         let newThread!: string;
 
         try {
-          [newThread] = await loadingText.loadedPromise$;
+          newThread = await loadingText.start();
         } catch (e: unknown) {
           alert((<Error>e).message);
         }
@@ -86,10 +89,10 @@ export class Start extends Component {
           підтримуються - текст, посилання. Можна задати декілька матеріалів
           одразу
         </h4>
-        ${materialField.node}
+        ${materialField}
 
         <h3>Задайте тему запитань (необов'язково)</h3>
-        ${topicField.node} ${footer}
+        ${topicField} ${footer}
       </div>
     `;
   }

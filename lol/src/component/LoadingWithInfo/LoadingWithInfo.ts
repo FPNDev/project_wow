@@ -7,13 +7,21 @@ type LoadingStep = {
   fn: (lastValue?: any) => Promise<unknown>;
 };
 
-export class LoadingWithInfo<T extends unknown[]> extends Component<Text> {
-  readonly loadedPromise$: Promise<T>;
+export class LoadingWithInfo<T> extends Component<Text> {
+  start!: () => Promise<T>;
 
   constructor(steps: LoadingStep[]) {
     super();
 
-    let stepsChained = Promise.resolve() as Promise<unknown>;
+    let stepsChained = new Promise<void>((resolve) => {
+      this.start = () => {
+        this.renderStep(steps[0], 0, steps.length);
+        resolve();
+
+        return loadedPromise$;
+      };
+    }) as Promise<unknown>;
+
     const resolvedValues: unknown[] = [];
     for (let i = 0; i < steps.length; i++) {
       stepsChained = stepsChained
@@ -23,15 +31,12 @@ export class LoadingWithInfo<T extends unknown[]> extends Component<Text> {
           if (i < steps.length - 1) {
             this.renderStep(steps[i + 1], i + 1, steps.length);
           } else {
-            return resolvedValues;
+            return v;
           }
         });
     }
 
-    this.loadedPromise$ = stepsChained as Promise<T>;
-
-    this.createView();
-    this.renderStep(steps[0], 0, steps.length);
+    const loadedPromise$ = stepsChained as Promise<T>;
   }
 
   view(): Text {

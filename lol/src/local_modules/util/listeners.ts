@@ -1,4 +1,5 @@
 import { Observable } from '../observable/observable';
+import { of } from '../observable/util';
 
 class EventSystem {
   removeEventListenerFns: Array<() => void> = [];
@@ -8,7 +9,7 @@ class EventSystem {
     object: HTMLElement,
     type: K,
     listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => unknown,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): () => void;
 
   // Window overloads
@@ -16,7 +17,7 @@ class EventSystem {
     object: Window,
     type: K,
     listener: (this: Window, ev: WindowEventMap[K]) => unknown,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): () => void;
 
   // Document overloads
@@ -24,7 +25,7 @@ class EventSystem {
     object: Document,
     type: K,
     listener: (this: Document, ev: DocumentEventMap[K]) => unknown,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): () => void;
 
   // Generic fallback for custom events or any EventTarget
@@ -32,14 +33,14 @@ class EventSystem {
     object: EventTarget,
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): () => void;
 
   add(
     object: EventTarget,
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
+    options?: boolean | AddEventListenerOptions,
   ): () => void {
     object.addEventListener(type, listener, options);
 
@@ -48,7 +49,7 @@ class EventSystem {
         object.removeEventListener(type, listener, options);
         this.removeEventListenerFns.splice(
           this.removeEventListenerFns.indexOf(unsubscribe),
-          1
+          1,
         );
         unsubscribe = undefined;
       }
@@ -62,9 +63,9 @@ class EventSystem {
     object: EventTarget,
     type: string,
     options?: boolean | AddEventListenerOptions,
-    useObservable?: Observable<T>
+    useObservable?: Observable<T>,
   ): Observable<T> {
-    const observable = useObservable ?? Observable<T>();
+    const observable = useObservable ?? of<T>();
     const handler = (e: T) => {
       observable.notify(e);
     };
@@ -73,7 +74,7 @@ class EventSystem {
       object,
       type,
       handler as EventListener,
-      options
+      options,
     );
 
     observable.subscribeDone(() => {

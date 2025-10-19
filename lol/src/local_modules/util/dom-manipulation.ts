@@ -1,3 +1,6 @@
+import { browserFeatures } from '../browserFeatures';
+import { Component } from '../component/component';
+
 export function appendChildren(parent: Node, children: (Node | null)[]) {
   for (let i = 0; i < children.length; i++) {
     if (children[i]) {
@@ -13,16 +16,16 @@ export function text(textValue = '') {
   return document.createTextNode(textValue);
 }
 
-const htmlRenderer = element('body');
+const htmlSanitizer = element('div');
 const HTMLReplacementComment = '__htmlelement';
 
-export function escHTML(text: string) {
-  htmlRenderer.textContent = text;
-  return htmlRenderer.innerHTML;
+export function escapeHTML(text: string) {
+  htmlSanitizer.textContent = text;
+  return htmlSanitizer.innerHTML;
 }
-export function unescHTML(text: string) {
-  htmlRenderer.innerHTML = text;
-  return htmlRenderer.textContent;
+export function unescapeHTML(text: string) {
+  htmlSanitizer.innerHTML = text;
+  return htmlSanitizer.textContent;
 }
 
 export function html(
@@ -48,9 +51,12 @@ export function mhtml(
 
   const recursiveReplaceElements = (localValues: unknown[]) => {
     for (let recursedIdx = 0; recursedIdx < localValues.length; recursedIdx++) {
-      if (localValues[recursedIdx] instanceof Node) {
+      if (
+        localValues[recursedIdx] instanceof Node ||
+        localValues[recursedIdx] instanceof Component
+      ) {
         finalString += `<!--${HTMLReplacementComment}-->`;
-        elements.push(<Node>localValues[recursedIdx]);
+        elements.push(localValues[recursedIdx] as Node | Component);
       } else if (
         localValues[recursedIdx] !== null &&
         localValues[recursedIdx] !== undefined
@@ -62,22 +68,21 @@ export function mhtml(
     }
   };
 
-  const elements: Node[] = [];
+  const elements: (Node | Component)[] = [];
   for (let idx = 0; idx < strings.length; idx++) {
     finalString += strings[idx];
     if (idx < values.length) {
+      const value = values[idx];
       recursiveReplaceElements(
-        Array.isArray(values[idx]) ? (values[idx] as unknown[]) : [values[idx]]
+        Array.isArray(value) ? (value as unknown[]) : [value]
       );
     }
   }
 
-  const rendererElement = element('body');
-  rendererElement.innerHTML = finalString.trim();
-
+  const fragment = createFragment(finalString.trim());
   if (elements.length) {
     const iter = document.createNodeIterator(
-      rendererElement,
+      fragment,
       NodeFilter.SHOW_COMMENT,
       (node) =>
         node.nodeValue === HTMLReplacementComment
@@ -86,9 +91,23 @@ export function mhtml(
     );
     let nextNode: Node | null;
     while ((nextNode = iter.nextNode())) {
-      nextNode.parentNode?.replaceChild(elements.shift()!, nextNode);
+      const element = elements.shift() as Node | Component;
+      nextNode.parentNode?.replaceChild(
+        element instanceof Node ? element : element.ensureView(),
+        nextNode
+      );
     }
   }
 
-  return [...rendererElement.childNodes];
+  return [...fragment.childNodes];
+}
+
+function createFragment(htmlString: string) {
+  if (!browserFeatures.supportsTemplate) {
+    return document.createRange().createContextualFragment(htmlString);
+  }
+
+  const template = document.createElement('template');
+  template.innerHTML = htmlString;
+  return template.content;
 }

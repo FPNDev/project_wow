@@ -1,5 +1,5 @@
 import { html, text } from '../../local_modules/util/dom-manipulation';
-import { listenerGroup } from '../../local_modules/util/listeners';
+import { eventSystem } from '../../local_modules/util/listeners';
 import classes from './style.module.scss';
 
 export function TextAreaTest(
@@ -7,7 +7,7 @@ export function TextAreaTest(
   placeholderText = '',
   className?: string,
 ) {
-  const listeners = listenerGroup();
+  const events = eventSystem();
 
   const placeholder = <HTMLDivElement>(
     html`<div class=${classes.textfieldPlaceholder}>${placeholderText}</div>`
@@ -23,11 +23,11 @@ export function TextAreaTest(
   };
   showOrHidePlaceholder();
 
-  listeners.add(textField, 'input', () => {
+  events.add(textField, 'input', () => {
     value = textField.textContent!.replace(/^\n/, '');
     showOrHidePlaceholder();
   });
-  listeners.add(textField, 'paste', (e) => {
+  events.add(textField, 'paste', (e) => {
     e.preventDefault();
     const plainText = e.clipboardData?.getData('text/plain') ?? '';
     const currentSelection = document.getSelection()!;
@@ -81,7 +81,7 @@ export function TextAreaTest(
 
   return [
     componentRender,
-    () => listeners.stopAll(),
+    () => events.stopAll(),
     {
       get value() {
         return value;
