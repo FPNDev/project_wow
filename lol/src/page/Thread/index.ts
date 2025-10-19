@@ -13,12 +13,12 @@ import {
   html,
   mhtml,
 } from '../../local_modules/util/dom-manipulation';
-import { eventSystem } from '../../local_modules/util/listeners';
+import { eventSubscriptionPool } from '../../local_modules/util/subscription/pool';
 
 import classes from './style.module.scss';
 
 export class Thread extends Component {
-  private events = eventSystem();
+  private pool = eventSubscriptionPool();
 
   private questionElement!: HTMLElement;
   private quoteElement!: HTMLElement;
@@ -42,7 +42,7 @@ export class Thread extends Component {
     this.parseThreadAndQuestionId();
     this.loadQuestion();
 
-    this.events.add(window, 'routeUpdate', () => {
+    this.pool.addEvent(window, 'routeUpdate', () => {
       this.parseThreadAndQuestionId();
       this.loadQuestion();
     });
@@ -64,11 +64,11 @@ export class Thread extends Component {
   }
 
   onDisconnect(): void {
-    this.events.stopAll();
+    this.pool.clear();
   }
 
   private addKeyEventListeners() {
-    this.events.add(document, 'keydown', (ev) => {
+    this.pool.addEvent(document, 'keydown', (ev) => {
       if (
         document.activeElement &&
         document.activeElement.hasAttribute('contenteditable')

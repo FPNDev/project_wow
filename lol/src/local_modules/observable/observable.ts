@@ -5,17 +5,31 @@ type Observer<T> = (data: T) => void;
 class BaseObservable<T> {
   private observers: Observer<T>[] = [];
   private doneObservers: Observer<void>[] = [];
-
-  protected open = true;
+  private open = true;
 
   get closed() {
     return !this.open;
   }
 
   subscribe(observer: Observer<T>) {
-    this.observers.push(observer);
+    let subscribed: boolean | undefined;
+    if (this.open) {
+      subscribed = true;
+      this.observers.push(observer);
+    }
+
+    return () => {
+      if (subscribed) {
+        this.observers.splice(this.observers.indexOf(observer), 1);
+        subscribed = undefined;
+      }
+    };
   }
   notify(data: T) {
+    if (!this.open) {
+      return;
+    }
+
     for (const observer of this.observers) {
       observer(data);
     }
@@ -44,4 +58,4 @@ const Observable = extendObservableWithPipes(BaseObservable);
 type Observable<T> = InstanceType<typeof Observable<T>>;
 
 export { Observable };
-export type { BaseObservable };
+export type { BaseObservable, Observer };

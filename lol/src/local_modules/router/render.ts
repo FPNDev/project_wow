@@ -8,12 +8,12 @@ export function render(
 ) {
   if (typeof route.component === 'string') {
     if (activeRender) {
-      activeRender?.destroy();
+      activeRender.destroy();
     }
     element.replaceChildren(route.component);
   } else if (!activeRender || activeRender?.constructor !== route.component) {
     if (activeRender) {
-      activeRender?.destroy();
+      activeRender.destroy();
     }
 
     const instance = new route.component();

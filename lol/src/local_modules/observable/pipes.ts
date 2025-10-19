@@ -55,7 +55,7 @@ function extendObservableWithPipes(
     pipe<POut>(
       pipes: PipesArray<T, POut> | [],
     ): PipedObservable<POut> | PipedObservable<T> {
-      if (pipes.length === 0) {
+      if (pipes.length === 0 || this.closed) {
         return this;
       }
       const joinedPipe = joinPipes(pipes);
@@ -64,7 +64,7 @@ function extendObservableWithPipes(
         const result = joinedPipe(data);
         if (result instanceof Promise) {
           result.then((resolved) => {
-            if (this.open) {
+            if (!this.closed) {
               obs.notify(resolved as POut);
             }
           });

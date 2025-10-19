@@ -3,14 +3,12 @@ import { Component } from '../component/component';
 import { render } from './render';
 import { findLocation } from './paths';
 
-export type RouteUpdateEvent = Event & {
-  detail?: {
-    previousPath: RouteWithComponent;
-    currentPath: RouteWithComponent;
-    previousLocation: Location;
-    currentLocation: Location;
-  };
-};
+export type RouteUpdateEvent = CustomEvent<{
+  previousPath: RouteWithComponent;
+  currentPath: RouteWithComponent;
+  previousLocation: Location;
+  currentLocation: Location;
+}>;
 
 export function setupRouter(element: Element, routes: Route[]) {
   let previousLocation: Location | undefined;
@@ -31,7 +29,7 @@ export function setupRouter(element: Element, routes: Route[]) {
     ) {
       const currentPromise = (queuedPromise = findLocation(
         routes,
-        location.pathname
+        location.pathname,
       ));
       const [foundLocation, matchedParams] = await currentPromise;
 
@@ -68,7 +66,7 @@ export function setupRouter(element: Element, routes: Route[]) {
                 previousLocation,
                 currentLocation: activeLocation,
               },
-            })
+            }),
           );
         }
       }
