@@ -1,4 +1,4 @@
-import { browserFeatures } from '../browserFeatures';
+import { browserFeatures } from '../browser-features';
 import { Component } from '../component/component';
 
 export function appendChildren(parent: Node, children: (Node | null)[]) {

@@ -1,4 +1,4 @@
-const ApiURL = `http://${location.hostname}:151`;
+// const ApiURL = `http://${location.hostname}:151`;
 const GPTFileAccept =
   'text/x-c,text/x-c++,text/x-csharp,text/css,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/x-golang,text/html,text/x-java,text/javascript,application/json,text/markdown,application/pdf,text/x-php,application/vnd.openxmlformats-officedocument.presentationml.presentation,text/x-python,text/x-script.python,text/x-ruby,application/x-sh,text/x-tex,application/typescript,text/plain';
 
@@ -38,7 +38,7 @@ const createThread = (text: string, files?: FileList | null) => {
   // });
 };
 
-const setTopic = (threadId: string, topic: string) => {
+const setTopic = (_threadId: string, _topic: string) => {
   return new Promise((resolve) =>
     setTimeout(() => resolve(Math.round(Math.random() * 15)), 5000),
   );
@@ -78,7 +78,7 @@ const generateDummyQuestion = (num: number): QuestionData => {
   };
 };
 
-const getQuestionFromThread = (threadId: string, questionId?: number) => {
+const getQuestionFromThread = (_threadId: string, questionId?: number) => {
   return dummifyGetQuestionFromThread(questionId);
   // return fetch(
   //   `${ApiURL}/${threadId}/question/${questionId !== undefined ? questionId : ''}`,

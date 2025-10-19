@@ -1,9 +1,11 @@
 import { Component } from '../../local_modules/component/component';
-import { element, html } from '../../local_modules/util/dom-manipulation';
+import { disposeEnv, isolateEnv } from '../../local_modules/isolated-env';
+import { element, html } from '../../local_modules/util/html';
 import classes from './style.module.scss';
 
 export class TextArea extends Component<HTMLDivElement> {
   private _value = '';
+  private focusCapture?: symbol;
 
   get value() {
     return this._value;

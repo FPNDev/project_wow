@@ -19,12 +19,11 @@ abstract class Component<T extends Node = Node> {
   }
 
   destroy() {
-    this._node?.parentNode?.removeChild(this._node);
-    this.onDisconnect?.();
-
     for (const child of this._childComponents.values()) {
       child.destroy();
     }
+    this._node?.parentNode?.removeChild(this._node);
+    this.onDisconnect?.();
   }
 
   onDisconnect?(): void;

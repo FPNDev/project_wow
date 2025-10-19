@@ -7,7 +7,7 @@ import {
   getQuestionFromThread,
   setTopic,
 } from '../../service/learnGPT';
-import { html } from '../../local_modules/util/dom-manipulation';
+import { html } from '../../local_modules/util/html';
 import classes from './style.module.scss';
 
 export class Start extends Component {

@@ -12,13 +12,18 @@ import {
   escapeHTML,
   html,
   mhtml,
-} from '../../local_modules/util/dom-manipulation';
-import { eventSubscriptionPool } from '../../local_modules/util/subscription/pool';
-
+} from '../../local_modules/util/html';
 import classes from './style.module.scss';
+import { poolWithEvents } from '../../local_modules/subscription/events';
+import {
+  disposeEnv,
+  getIsolatedEnv,
+  isolateEnv,
+} from '../../local_modules/isolated-env/env';
+import { isolateViewOnFocus } from '../../local_modules/isolated-env/focus';
 
 export class Thread extends Component {
-  private pool = eventSubscriptionPool();
+  private pool = poolWithEvents();
 
   private questionElement!: HTMLElement;
   private quoteElement!: HTMLElement;
@@ -31,6 +36,8 @@ export class Thread extends Component {
   private loadingQuestion = false;
   private controlsAllowed = false;
   private hasAnswered = false;
+
+  private focusCapture = Symbol();
 
   constructor() {
     super();
@@ -49,6 +56,8 @@ export class Thread extends Component {
   }
 
   view() {
+    isolateEnv(this.focusCapture);
+
     this.renderBackButton();
     this.renderNextButton();
 
@@ -65,14 +74,12 @@ export class Thread extends Component {
 
   onDisconnect(): void {
     this.pool.clear();
+    disposeEnv(this.focusCapture);
   }
 
   private addKeyEventListeners() {
     this.pool.addEvent(document, 'keydown', (ev) => {
-      if (
-        document.activeElement &&
-        document.activeElement.hasAttribute('contenteditable')
-      ) {
+      if (getIsolatedEnv() !== this.focusCapture) {
         return;
       }
 
@@ -275,6 +282,7 @@ export class Thread extends Component {
     this.attach([topicInput]);
 
     const topicInputView = topicInput.ensureView();
+    isolateViewOnFocus(topicInputView);
 
     const submitBtn = <HTMLButtonElement>(
       html`<button class="button">OK</button>`

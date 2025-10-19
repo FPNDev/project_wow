@@ -1,5 +1,5 @@
 import { Component } from '../../local_modules/component/component';
-import { text } from '../../local_modules/util/dom-manipulation';
+import { text } from '../../local_modules/util/html';
 
 type LoadingStep = {
   text: string;

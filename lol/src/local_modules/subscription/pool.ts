@@ -1,12 +1,22 @@
-import { Observable, Observer } from '../../observable/observable';
-import { extendSubscriptionPoolWithDOMEvents } from './events';
+import { Observable, Observer } from '../observable/observable';
 
 export class SubscriptionPool {
   protected readonly unsubscribePool: Array<() => void> = [];
 
   subscribe<T>(observable: Observable<T>, observer: Observer<T>) {
-    const unsubscribe = observable.subscribe(observer);
+    let unsubscribe: (() => void) | undefined = observable.subscribe(observer);
     this.unsubscribePool.push(unsubscribe);
+
+    return () => {
+      if (unsubscribe) {
+        const index = this.unsubscribePool.indexOf(unsubscribe);
+        if (index !== -1) {
+          this.unsubscribePool.splice(index, 1);
+        }
+        unsubscribe();
+        unsubscribe = undefined;
+      }
+    };
   }
 
   clear() {
@@ -19,8 +29,4 @@ export class SubscriptionPool {
   }
 }
 
-const EventSubscriptionPool =
-  extendSubscriptionPoolWithDOMEvents(SubscriptionPool);
-
 export const subscriptionPool = () => new SubscriptionPool();
-export const eventSubscriptionPool = () => new EventSubscriptionPool();
