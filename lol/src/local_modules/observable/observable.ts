@@ -7,6 +7,8 @@ class BaseObservable<T> {
   private doneObservers: Observer<void>[] = [];
   private open = true;
 
+  private sendToIterators?: (iteratorRes: IteratorResult<T>) => void;
+
   get closed() {
     return !this.open;
   }
@@ -33,6 +35,10 @@ class BaseObservable<T> {
     for (const observer of this.observers) {
       observer(data);
     }
+
+    if (this.sendToIterators) {
+      this.sendToIterators({ done: false, value: data });
+    }
   }
   subscribeDone(observer: () => void) {
     this.doneObservers.push(observer);
@@ -49,8 +55,40 @@ class BaseObservable<T> {
     ) {
       this.doneObservers[doneIdx]();
     }
+    if (this.sendToIterators) {
+      this.sendToIterators({ done: true, value: undefined });
+    }
     this.doneObservers.length = 0;
     this.observers.length = 0;
+  }
+
+  [Symbol.asyncIterator](): {
+    next(): Promise<IteratorResult<T>>;
+  } {
+    const iterator = this.createAsyncIterator();
+    return iterator;
+  }
+
+  private createAsyncIterator(): {
+    next(): Promise<IteratorResult<T>>;
+  } {
+    return {
+      next: (): Promise<IteratorResult<T>> => {
+        if (!this.open) {
+          return Promise.resolve({ done: true, value: undefined });
+        }
+
+        return new Promise((resolve) => {
+          const sendToPreviousIterators = this.sendToIterators;
+          this.sendToIterators = (iteratorRes: IteratorResult<T>) => {
+            resolve(iteratorRes);
+            if (sendToPreviousIterators) {
+              sendToPreviousIterators(iteratorRes);
+            }
+          };
+        });
+      },
+    };
   }
 }
 
