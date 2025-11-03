@@ -3,10 +3,11 @@ import { AssistantStreamEvent } from 'openai/resources/beta/assistants';
 import { TextDelta } from 'openai/resources/beta/threads/messages';
 import { AssistantStream } from 'openai/lib/AssistantStream';
 
-import { Observable } from '../observable';
+import { Observable } from '../observable/observable';
 import { openai } from '../openai';
 import { startRunOnThread } from './run';
 import { handleFunctions } from './functions';
+import { of } from '../observable/util';
 
 interface MessageConfig {
   threadId: string;
@@ -33,7 +34,7 @@ const sendMessageReceiveDelta = (
   threadId: MessageConfig['threadId'],
   message: MessageConfig['message']
 ): Observable<string> => {
-  const onTextDelta$ = Observable<string>();
+  const onTextDelta$ = of<string>();
   const queueEntry = [message, onTextDelta$] as QueueEntry;
   if (!queueRunning[threadId]) {
     MessageQueue[threadId] = [queueEntry];

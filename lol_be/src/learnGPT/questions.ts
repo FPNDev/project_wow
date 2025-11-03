@@ -1,5 +1,5 @@
 import { sendMessageReceiveDelta } from '../gpt';
-import { Observable } from '../observable';
+import { of } from '../observable/util';
 import { removeResponseEnd } from './response';
 import { markThreadActive } from './threads';
 
@@ -21,8 +21,8 @@ const QUESTION_END_TOKEN = '[question_end]';
 const questions: Record<string, Question[]> = Object.create(null);
 const maxQueuedIndex: Record<string, number> = Object.create(null);
 
-const onQuestion$ = Observable<void>();
-const onError$ = Observable<string>();
+const onQuestion$ = of<void>();
+const onError$ = of<string>();
 
 const loadingQuestions: Record<string, boolean> = Object.create(null);
 
